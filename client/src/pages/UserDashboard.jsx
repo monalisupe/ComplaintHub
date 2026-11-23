@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
 import StatsCard from "../components/StatsCard";
-import ComplaintTable from "../components/ComplaintTable";
+import ComplaintModal from "../components/ComplaintModal";
 import api from "../services/api";
 
 import {
@@ -14,8 +13,6 @@ import {
   Users,
   Activity,
   Calendar,
-  TrendingUp,
-  TrendingDown,
   ArrowUpRight,
   Shield,
   Crown,
@@ -31,6 +28,8 @@ function UserDashboard() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch complaints from backend
   useEffect(() => {
@@ -41,7 +40,7 @@ function UserDashboard() {
     try {
       setLoading(true);
       setError("");
-      
+
       const res = await api.get("/complaints/my");
       setComplaints(res.data.complaints || []);
     } catch (err) {
@@ -99,385 +98,251 @@ function UserDashboard() {
     }
   };
 
-  // Stats data matching admin colors
+  // Stats data
   const statCards = [
     {
       title: "Total Complaints",
       value: total,
-      icon: <FileText size={24} />,
+      icon: <FileText size={22} />,
       color: "blue",
-      gradient: "from-blue-500 to-cyan-500",
       subtitle: "All your complaints",
     },
     {
       title: "Pending",
       value: pending,
-      icon: <Clock size={24} />,
+      icon: <Clock size={22} />,
       color: "orange",
-      gradient: "from-orange-500 to-yellow-500",
       subtitle: "Awaiting action",
     },
     {
       title: "In Progress",
       value: progress,
-      icon: <Loader size={24} className="animate-spin" />,
+      icon: <Loader size={22} className="animate-spin" />,
       color: "cyan",
-      gradient: "from-cyan-500 to-teal-500",
       subtitle: "Being resolved",
     },
     {
       title: "Resolved",
       value: resolved,
-      icon: <CheckCircle size={24} />,
+      icon: <CheckCircle size={22} />,
       color: "green",
-      gradient: "from-green-500 to-emerald-500",
       subtitle: "Successfully resolved",
     },
   ];
-
-  // Floating bubbles
-  const bubbles = Array.from({ length: 15 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 80 + 30,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    duration: Math.random() * 20 + 15,
-    delay: Math.random() * 10,
-    opacity: Math.random() * 0.08 + 0.02,
-  }));
 
   return (
     <>
       <style>{`
         /* ========================================
-           USER DASHBOARD - PREMIUM DARK THEME
-           Matching Admin Dashboard Colors
+           USER DASHBOARD - PROFESSIONAL WHITE THEME
+           Matching Login / Register Palette
            ======================================== */
 
         .user-dashboard-wrapper {
           min-height: 100vh;
-          background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%);
+          background: #f8fafc;
           position: relative;
-          overflow: hidden;
         }
 
-        /* Animated Background Glows */
-        .user-bg-glow {
-          position: fixed;
-          width: 500px;
-          height: 500px;
-          border-radius: 50%;
-          filter: blur(120px);
-          opacity: 0.12;
-          animation: floatGlow 20s ease-in-out infinite alternate;
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        .user-bg-glow.glow-1 {
-          top: -10%;
-          left: -5%;
-          background: radial-gradient(circle, #6366f1, #8b5cf6);
-          animation-delay: 0s;
-        }
-
-        .user-bg-glow.glow-2 {
-          bottom: -10%;
-          right: -5%;
-          background: radial-gradient(circle, #06b6d4, #3b82f6);
-          animation-delay: -5s;
-        }
-
-        .user-bg-glow.glow-3 {
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: radial-gradient(circle, #8b5cf6, #ec4899);
-          animation-delay: -10s;
-          width: 300px;
-          height: 300px;
-        }
-
-        @keyframes floatGlow {
-          0% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -30px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(10px, -10px) scale(1.05); }
-        }
-
-        /* Floating Bubbles */
-        .bubble-particle-user {
-          position: fixed;
-          border-radius: 50%;
-          background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-          border: 1px solid rgba(255,255,255,0.04);
-          backdrop-filter: blur(4px);
-          pointer-events: none;
-          z-index: 0;
-          animation: floatBubble var(--duration) ease-in-out infinite alternate;
-          animation-delay: var(--delay);
-        }
-
-        @keyframes floatBubble {
-          0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-          25% { transform: translate(15px, -25px) scale(1.05) rotate(5deg); }
-          50% { transform: translate(-10px, -35px) scale(0.95) rotate(-3deg); }
-          75% { transform: translate(20px, -15px) scale(1.02) rotate(4deg); }
-          100% { transform: translate(-8px, -30px) scale(1) rotate(-2deg); }
-        }
-
-        /* Layout */
         .user-layout-premium {
           display: flex;
           min-height: 100vh;
-          position: relative;
-          z-index: 1;
         }
 
         .user-main-premium {
           flex: 1;
           padding: 28px 34px 50px;
           min-width: 0;
-          position: relative;
+          background: #f8fafc;
         }
 
-        /* Premium Top Bar */
+        /* Top Bar */
         .user-topbar-premium {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 16px 28px;
-          margin-bottom: 28px;
-          background: rgba(255,255,255,0.05);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-radius: 20px;
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-          transition: all 0.4s ease;
-        }
-
-        .user-topbar-premium:hover {
-          border-color: rgba(99,102,241,0.3);
-          box-shadow: 0 8px 40px rgba(99,102,241,0.1);
+          padding: 14px 24px;
+          margin-bottom: 24px;
+          background: #ffffff;
+          border-radius: 16px;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
         .user-search-premium {
           display: flex;
           align-items: center;
           gap: 12px;
-          background: rgba(255,255,255,0.06);
-          padding: 10px 18px;
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.06);
-          transition: all 0.3s ease;
+          background: #f8fafc;
+          padding: 10px 16px;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+          transition: all 0.2s ease;
           flex: 1;
-          max-width: 400px;
+          max-width: 420px;
         }
 
         .user-search-premium:focus-within {
-          border-color: #6366f1;
-          box-shadow: 0 0 30px rgba(99,102,241,0.15);
-          background: rgba(255,255,255,0.08);
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+          background: #ffffff;
         }
 
         .user-search-premium input {
           background: transparent;
           border: none;
           outline: none;
-          color: #e2e8f0;
+          color: #0f172a;
           font-size: 14px;
           width: 100%;
         }
 
         .user-search-premium input::placeholder {
-          color: #64748b;
+          color: #94a3b8;
         }
 
         .user-actions-premium {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
         }
 
         .user-action-btn {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          border: 1px solid rgba(255,255,255,0.06);
-          background: rgba(255,255,255,0.05);
-          color: #94a3b8;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          color: #64748b;
           display: grid;
           place-items: center;
           cursor: pointer;
-          transition: all 0.3s ease;
-          position: relative;
+          transition: all 0.2s ease;
         }
 
         .user-action-btn:hover {
-          background: rgba(99,102,241,0.15);
-          border-color: #6366f1;
-          color: #e2e8f0;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(99,102,241,0.15);
+          background: #f1f5f9;
+          border-color: #cbd5e1;
+          color: #2563eb;
         }
 
         .user-profile-premium {
           display: flex;
           align-items: center;
-          gap: 14px;
-          padding: 6px 16px 6px 6px;
-          border-radius: 14px;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.06);
+          gap: 12px;
+          padding: 4px 14px 4px 4px;
+          border-radius: 12px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .user-profile-premium:hover {
-          background: rgba(255,255,255,0.08);
-          border-color: rgba(99,102,241,0.3);
-          transform: translateY(-2px);
+          background: #f1f5f9;
+          border-color: #cbd5e1;
         }
 
         .user-avatar-premium {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
           display: grid;
           place-items: center;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          background: #2563eb;
           font-weight: 700;
-          font-size: 16px;
-          color: white;
-          box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+          font-size: 14px;
+          color: #ffffff;
         }
 
         .user-profile-premium .profile-info strong {
           display: block;
-          color: #f1f5f9;
-          font-size: 14px;
+          color: #0f172a;
+          font-size: 13px;
+          font-weight: 600;
         }
 
         .user-profile-premium .profile-info small {
-          color: #94a3b8;
+          color: #64748b;
           font-size: 11px;
         }
 
         /* Welcome Section */
         .user-welcome-premium {
-          padding: 32px 36px;
-          margin-bottom: 28px;
-          background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08));
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-radius: 24px;
-          border: 1px solid rgba(255,255,255,0.08);
+          padding: 28px 32px;
+          margin-bottom: 24px;
+          background: #ffffff;
+          border-radius: 18px;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
           gap: 20px;
-          position: relative;
-          overflow: hidden;
-          transition: all 0.4s ease;
-        }
-
-        .user-welcome-premium::before {
-          content: '';
-          position: absolute;
-          top: -50%;
-          right: -20%;
-          width: 300px;
-          height: 300px;
-          background: radial-gradient(circle, rgba(99,102,241,0.1), transparent 70%);
-          border-radius: 50%;
-          animation: floatGlow 8s ease-in-out infinite alternate;
-        }
-
-        .user-welcome-premium:hover {
-          border-color: rgba(99,102,241,0.2);
-          box-shadow: 0 8px 40px rgba(99,102,241,0.08);
-        }
-
-        .user-welcome-premium .welcome-left {
-          position: relative;
-          z-index: 1;
         }
 
         .user-badge-premium {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
-          padding: 6px 14px;
+          gap: 6px;
+          padding: 4px 12px;
           border-radius: 20px;
-          background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
-          border: 1px solid rgba(99,102,241,0.2);
-          font-size: 10px;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          font-size: 11px;
           font-weight: 700;
-          letter-spacing: 1.5px;
-          color: #a78bfa;
+          letter-spacing: 0.5px;
+          color: #2563eb;
           text-transform: uppercase;
         }
 
         .user-welcome-premium h1 {
-          margin: 14px 0 6px;
-          font-size: 34px;
+          margin: 10px 0 6px;
+          font-size: 28px;
           font-weight: 800;
-          color: #f1f5f9;
+          color: #0f172a;
         }
 
         .user-welcome-premium h1 span {
-          background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-size: 200% 200%;
-          animation: gradientShift 4s ease-in-out infinite alternate;
-        }
-
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
+          color: #2563eb;
         }
 
         .user-welcome-premium p {
-          color: #94a3b8;
-          font-size: 15px;
+          color: #64748b;
+          font-size: 14px;
           margin: 0;
         }
 
         .user-welcome-premium .welcome-right {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 12px;
           flex-wrap: wrap;
-          position: relative;
-          z-index: 1;
         }
 
         .user-stat-chip {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 10px 18px;
-          border-radius: 14px;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.06);
-          color: #cbd5e1;
+          padding: 8px 16px;
+          border-radius: 12px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #475569;
           font-size: 13px;
-          transition: all 0.3s ease;
+          font-weight: 500;
+          transition: all 0.2s ease;
         }
 
         .user-stat-chip:hover {
-          background: rgba(255,255,255,0.1);
-          border-color: rgba(99,102,241,0.2);
-          transform: translateY(-2px);
+          background: #f1f5f9;
+          border-color: #cbd5e1;
         }
 
         .user-stat-chip .chip-value {
           font-weight: 700;
-          color: #f1f5f9;
+          color: #0f172a;
         }
 
         /* Stats Grid */
@@ -485,130 +350,83 @@ function UserDashboard() {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 20px;
-          margin-bottom: 28px;
+          margin-bottom: 24px;
         }
 
         .user-stat-card-premium {
           position: relative;
-          padding: 24px;
-          border-radius: 20px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.06);
-          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          cursor: pointer;
+          padding: 22px 24px;
+          border-radius: 18px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+          transition: all 0.25s ease;
           overflow: hidden;
         }
 
-        .user-stat-card-premium::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, var(--gradient-from), var(--gradient-to));
-          opacity: 0;
-          transition: opacity 0.4s ease;
-        }
-
-        .user-stat-card-premium:hover::before {
-          opacity: 1;
-        }
-
         .user-stat-card-premium:hover {
-          transform: translateY(-8px) scale(1.02);
-          border-color: rgba(255,255,255,0.12);
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-
-        .user-stat-card-premium .stat-glow {
-          position: absolute;
-          top: -50%;
-          right: -50%;
-          width: 200%;
-          height: 200%;
-          background: radial-gradient(circle, var(--glow-color), transparent 60%);
-          opacity: 0;
-          transition: opacity 0.6s ease;
-          pointer-events: none;
-        }
-
-        .user-stat-card-premium:hover .stat-glow {
-          opacity: 0.1;
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px -10px rgba(0,0,0,0.08);
+          border-color: #cbd5e1;
         }
 
         .user-stat-card-premium .stat-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          position: relative;
-          z-index: 1;
         }
 
         .user-stat-card-premium .stat-icon-wrapper {
-          width: 52px;
-          height: 52px;
-          border-radius: 16px;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
           display: grid;
           place-items: center;
           background: var(--icon-bg);
           color: var(--icon-color);
-          transition: all 0.4s ease;
-          position: relative;
-          z-index: 1;
+          transition: all 0.3s ease;
         }
 
         .user-stat-card-premium:hover .stat-icon-wrapper {
-          transform: rotate(-10deg) scale(1.1);
+          transform: scale(1.08);
         }
 
         .user-stat-card-premium .stat-value {
-          font-size: 36px;
+          font-size: 32px;
           font-weight: 800;
-          color: #f1f5f9;
+          color: #0f172a;
           margin: 14px 0 4px;
-          position: relative;
-          z-index: 1;
+          line-height: 1;
         }
 
         .user-stat-card-premium .stat-title {
-          color: #94a3b8;
-          font-size: 14px;
-          font-weight: 500;
-          position: relative;
-          z-index: 1;
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
 
         .user-stat-card-premium .stat-subtitle {
-          color: #64748b;
+          color: #94a3b8;
           font-size: 12px;
           margin-top: 4px;
-          position: relative;
-          z-index: 1;
         }
 
         /* Complaint Table */
         .user-table-premium {
-          border-radius: 24px;
-          padding: 28px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.06);
-          transition: all 0.4s ease;
-        }
-
-        .user-table-premium:hover {
-          border-color: rgba(255,255,255,0.1);
+          border-radius: 18px;
+          padding: 24px 28px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
         .user-table-premium .table-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 24px;
+          margin-bottom: 20px;
           flex-wrap: wrap;
           gap: 12px;
         }
@@ -620,73 +438,68 @@ function UserDashboard() {
         }
 
         .user-table-premium .table-header-left .header-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 14px;
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
           display: grid;
           place-items: center;
-          background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
-          color: #a78bfa;
+          background: #eff6ff;
+          color: #2563eb;
         }
 
         .user-table-premium .table-header h2 {
           margin: 0;
-          color: #f1f5f9;
-          font-size: 20px;
+          color: #0f172a;
+          font-size: 18px;
           font-weight: 700;
         }
 
         .user-table-premium .table-header p {
           margin: 4px 0 0;
-          color: #94a3b8;
+          color: #64748b;
           font-size: 13px;
         }
 
         .table-wrapper-premium {
           overflow-x: auto;
-          border-radius: 16px;
+          border-radius: 12px;
+          border: 1px solid #f1f5f9;
         }
 
         .user-table-premium table {
           width: 100%;
-          border-collapse: separate;
-          border-spacing: 0 6px;
+          border-collapse: collapse;
         }
 
         .user-table-premium th {
-          color: #94a3b8;
+          color: #475569;
           font-size: 11px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          padding: 14px 16px;
+          padding: 12px 16px;
           text-align: left;
-          background: rgba(255,255,255,0.03);
-          border-radius: 10px;
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
         }
 
         .user-table-premium td {
           padding: 14px 16px;
-          color: #e2e8f0;
+          color: #1e293b;
           font-size: 14px;
-          background: rgba(255,255,255,0.02);
-          border-radius: 10px;
-          transition: all 0.3s ease;
-        }
-
-        .user-table-premium tbody tr {
-          transition: all 0.3s ease;
+          background: #ffffff;
+          border-bottom: 1px solid #f1f5f9;
+          transition: background 0.15s ease;
         }
 
         .user-table-premium tbody tr:hover td {
-          background: rgba(99,102,241,0.08);
-          transform: scale(1.01);
+          background: #f8fafc;
         }
 
         .user-table-premium .complaint-id {
           font-family: monospace;
           font-weight: 600;
-          color: #818cf8;
+          color: #2563eb;
           font-size: 13px;
         }
 
@@ -694,35 +507,35 @@ function UserDashboard() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 6px 14px;
+          padding: 4px 12px;
           border-radius: 20px;
           font-size: 12px;
-          font-weight: 700;
-          transition: all 0.3s ease;
+          font-weight: 600;
+          transition: all 0.2s ease;
         }
 
         .status-badge.pending {
-          background: rgba(245,158,11,0.15);
-          color: #fbbf24;
-          border: 1px solid rgba(245,158,11,0.2);
+          background: #fef3c7;
+          color: #b45309;
+          border: 1px solid #fde68a;
         }
 
         .status-badge.progress {
-          background: rgba(99,102,241,0.15);
-          color: #818cf8;
-          border: 1px solid rgba(99,102,241,0.2);
+          background: #eff6ff;
+          color: #1d4ed8;
+          border: 1px solid #bfdbfe;
         }
 
         .status-badge.resolved {
-          background: rgba(16,185,129,0.15);
-          color: #34d399;
-          border: 1px solid rgba(16,185,129,0.2);
+          background: #dcfce7;
+          color: #15803d;
+          border: 1px solid #bbf7d0;
         }
 
         .status-badge.rejected {
-          background: rgba(239,68,68,0.15);
-          color: #f87171;
-          border: 1px solid rgba(239,68,68,0.2);
+          background: #ffe4e6;
+          color: #be123c;
+          border: 1px solid #fecdd3;
         }
 
         .view-btn-premium {
@@ -730,37 +543,38 @@ function UserDashboard() {
           align-items: center;
           gap: 6px;
           padding: 6px 14px;
-          border: none;
+          border: 1px solid #bfdbfe;
           border-radius: 10px;
-          background: rgba(99,102,241,0.12);
-          color: #818cf8;
+          background: #eff6ff;
+          color: #2563eb;
           font-weight: 600;
           font-size: 12px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .view-btn-premium:hover {
-          background: rgba(99,102,241,0.25);
-          transform: translateX(4px);
+          background: #2563eb;
+          color: #ffffff;
+          border-color: #2563eb;
         }
 
         /* Loading & Error */
         .user-loading-premium {
-          min-height: 300px;
+          min-height: 280px;
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
-          gap: 20px;
-          color: #94a3b8;
+          gap: 16px;
+          color: #64748b;
         }
 
         .user-loading-premium .spinner-premium {
-          width: 48px;
-          height: 48px;
-          border: 3px solid rgba(255,255,255,0.05);
-          border-top: 3px solid #6366f1;
+          width: 42px;
+          height: 42px;
+          border: 3px solid #e2e8f0;
+          border-top: 3px solid #2563eb;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
@@ -770,49 +584,50 @@ function UserDashboard() {
         }
 
         .user-error-premium {
-          min-height: 300px;
+          min-height: 280px;
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
           gap: 16px;
-          background: rgba(239,68,68,0.08);
-          border-radius: 24px;
-          border: 1px solid rgba(239,68,68,0.15);
-          padding: 40px;
-          color: #f87171;
+          background: #fef2f2;
+          border-radius: 18px;
+          border: 1px solid #fecaca;
+          padding: 36px;
+          color: #b91c1c;
         }
 
         .user-error-premium button {
-          padding: 10px 24px;
+          padding: 10px 22px;
           border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          background: #2563eb;
           color: white;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .user-error-premium button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 30px rgba(99,102,241,0.3);
+          background: #1d4ed8;
         }
 
         .empty-state-premium {
           text-align: center;
           padding: 60px 20px;
-          color: #94a3b8;
+          color: #64748b;
         }
 
         .empty-state-premium .empty-icon {
-          font-size: 56px;
-          margin-bottom: 16px;
+          font-size: 52px;
+          margin-bottom: 14px;
         }
 
         .empty-state-premium h3 {
-          color: #f1f5f9;
-          margin: 0 0 8px;
+          color: #0f172a;
+          margin: 0 0 6px;
+          font-size: 18px;
+          font-weight: 700;
         }
 
         /* Responsive */
@@ -834,11 +649,11 @@ function UserDashboard() {
           .user-welcome-premium {
             flex-direction: column;
             align-items: flex-start;
-            padding: 24px;
+            padding: 20px;
           }
 
           .user-welcome-premium h1 {
-            font-size: 24px;
+            font-size: 22px;
           }
 
           .user-topbar-premium {
@@ -855,82 +670,29 @@ function UserDashboard() {
           .user-profile-premium .profile-info {
             display: none;
           }
-
-          .user-stat-card-premium .stat-value {
-            font-size: 28px;
-          }
-
-          .user-table-premium {
-            padding: 16px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .user-welcome-premium h1 {
-            font-size: 20px;
-          }
-
-          .user-stat-card-premium {
-            padding: 16px;
-          }
-
-          .user-stat-card-premium .stat-value {
-            font-size: 24px;
-          }
-
-          .user-table-premium table {
-            font-size: 12px;
-          }
-
-          .user-table-premium td,
-          .user-table-premium th {
-            padding: 10px 12px;
-          }
         }
       `}</style>
 
       <div className="user-dashboard-wrapper">
-        {/* Animated Background Glows */}
-        <div className="user-bg-glow glow-1"></div>
-        <div className="user-bg-glow glow-2"></div>
-        <div className="user-bg-glow glow-3"></div>
-
-        {/* Floating Bubbles */}
-        {bubbles.map((bubble) => (
-          <div
-            key={bubble.id}
-            className="bubble-particle-user"
-            style={{
-              width: bubble.size + 'px',
-              height: bubble.size + 'px',
-              left: bubble.left + '%',
-              top: bubble.top + '%',
-              '--duration': bubble.duration + 's',
-              '--delay': bubble.delay + 's',
-              opacity: bubble.opacity,
-            }}
-          />
-        ))}
-
         <div className="user-layout-premium">
           <Sidebar />
 
           <main className="user-main-premium">
-            {/* Premium Top Bar */}
+            {/* Top Bar */}
             <header className="user-topbar-premium">
               <div className="user-search-premium">
-                <Search size={18} color="#64748b" />
+                <Search size={18} color="#94a3b8" />
                 <input
                   type="text"
                   placeholder="Search your complaints..."
                 />
                 <kbd style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  padding: '2px 10px',
+                  background: '#f1f5f9',
+                  padding: '2px 8px',
                   borderRadius: '6px',
                   fontSize: '11px',
                   color: '#64748b',
-                  border: '1px solid rgba(255,255,255,0.05)'
+                  border: '1px solid #e2e8f0'
                 }}>
                   ⌘K
                 </kbd>
@@ -964,7 +726,7 @@ function UserDashboard() {
               <div className="welcome-left">
                 <span className="user-badge-premium">
                   <User size={12} />
-                  Citizen Panel
+                  Citizen Portal
                 </span>
                 <h1>
                   Welcome, <span>{user?.name || "User"}</span>
@@ -977,19 +739,19 @@ function UserDashboard() {
 
               <div className="welcome-right">
                 <div className="user-stat-chip">
-                  <FileText size={14} color="#818cf8" />
+                  <FileText size={14} color="#2563eb" />
                   <span>Total: <span className="chip-value">{total}</span></span>
                 </div>
                 <div className="user-stat-chip">
-                  <Clock size={14} color="#fbbf24" />
+                  <Clock size={14} color="#d97706" />
                   <span>Pending: <span className="chip-value">{pending}</span></span>
                 </div>
                 <div className="user-stat-chip">
-                  <Calendar size={14} color="#818cf8" />
+                  <Calendar size={14} color="#2563eb" />
                   <span>
-                    {new Date().toLocaleDateString('en-US', { 
-                      weekday: 'short', 
-                      month: 'short', 
+                    {new Date().toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
                       day: 'numeric',
                       year: 'numeric'
                     })}
@@ -1001,7 +763,7 @@ function UserDashboard() {
             {/* Error State */}
             {error && (
               <div className="user-error-premium">
-                <div style={{ fontSize: '48px' }}>⚠️</div>
+                <div style={{ fontSize: '42px' }}>⚠️</div>
                 <p>{error}</p>
                 <button onClick={fetchComplaints}>
                   <ArrowUpRight size={16} style={{ display: 'inline', marginRight: '8px' }} />
@@ -1021,40 +783,29 @@ function UserDashboard() {
             {/* Dashboard Content */}
             {!loading && !error && (
               <>
-                {/* Stats Cards - Matching Admin Colors */}
+                {/* Stats Cards */}
                 <section className="user-stats-premium">
                   {statCards.map((stat, index) => (
                     <div
                       key={index}
                       className="user-stat-card-premium"
                       style={{
-                        '--gradient-from': stat.color === 'blue' ? '#3b82f6' : 
-                                          stat.color === 'orange' ? '#f59e0b' :
-                                          stat.color === 'cyan' ? '#06b6d4' :
-                                          stat.color === 'green' ? '#10b981' : '#3b82f6',
-                        '--gradient-to': stat.color === 'blue' ? '#06b6d4' :
-                                          stat.color === 'orange' ? '#fbbf24' :
-                                          stat.color === 'cyan' ? '#14b8a6' :
-                                          stat.color === 'green' ? '#22c55e' : '#06b6d4',
-                        '--glow-color': stat.color === 'blue' ? 'rgba(59,130,246,0.3)' :
-                                          stat.color === 'orange' ? 'rgba(245,158,11,0.3)' :
-                                          stat.color === 'cyan' ? 'rgba(6,182,212,0.3)' :
-                                          stat.color === 'green' ? 'rgba(16,185,129,0.3)' : 'rgba(59,130,246,0.3)',
-                        '--icon-bg': `linear-gradient(135deg, ${stat.color === 'blue' ? 'rgba(59,130,246,0.2)' : 
-                                          stat.color === 'orange' ? 'rgba(245,158,11,0.2)' :
-                                          stat.color === 'cyan' ? 'rgba(6,182,212,0.2)' :
-                                          stat.color === 'green' ? 'rgba(16,185,129,0.2)' : 'rgba(59,130,246,0.2)'}, 
-                                          ${stat.color === 'blue' ? 'rgba(6,182,212,0.1)' : 
-                                          stat.color === 'orange' ? 'rgba(251,191,36,0.1)' :
-                                          stat.color === 'cyan' ? 'rgba(20,184,166,0.1)' :
-                                          stat.color === 'green' ? 'rgba(34,197,94,0.1)' : 'rgba(6,182,212,0.1)'})`,
-                        '--icon-color': stat.color === 'blue' ? '#60a5fa' : 
-                                          stat.color === 'orange' ? '#fbbf24' :
-                                          stat.color === 'cyan' ? '#22d3ee' :
-                                          stat.color === 'green' ? '#34d399' : '#60a5fa',
+                        borderLeft: `4px solid ${
+                          stat.color === 'blue' ? '#2563eb' :
+                          stat.color === 'orange' ? '#f59e0b' :
+                          stat.color === 'cyan' ? '#0891b2' :
+                          stat.color === 'green' ? '#16a34a' : '#2563eb'
+                        }`,
+                        '--icon-bg': stat.color === 'blue' ? '#eff6ff' :
+                                      stat.color === 'orange' ? '#fffbeb' :
+                                      stat.color === 'cyan' ? '#ecfeff' :
+                                      stat.color === 'green' ? '#f0fdf4' : '#eff6ff',
+                        '--icon-color': stat.color === 'blue' ? '#2563eb' :
+                                        stat.color === 'orange' ? '#d97706' :
+                                        stat.color === 'cyan' ? '#0891b2' :
+                                        stat.color === 'green' ? '#16a34a' : '#2563eb',
                       }}
                     >
-                      <div className="stat-glow"></div>
                       <div className="stat-header">
                         <div className="stat-icon-wrapper">
                           {stat.icon}
@@ -1086,9 +837,9 @@ function UserDashboard() {
                       <div className="empty-icon">📋</div>
                       <h3>No complaints found</h3>
                       <p>You haven't submitted any complaints yet.</p>
-                      <button 
-                        className="view-btn-premium" 
-                        style={{ marginTop: '16px', padding: '10px 24px' }}
+                      <button
+                        className="view-btn-premium"
+                        style={{ marginTop: '16px', padding: '10px 24px', background: '#2563eb', color: '#ffffff', borderColor: '#2563eb' }}
                         onClick={() => window.location.href = '/create-complaint'}
                       >
                         Create New Complaint →
@@ -1118,7 +869,7 @@ function UserDashboard() {
                                 </span>
                               </td>
                               <td>{complaint.category}</td>
-                              <td>{complaint.title || "Untitled"}</td>
+                              <td style={{ fontWeight: 500 }}>{complaint.title || "Untitled"}</td>
                               <td>
                                 {new Date(complaint.createdAt || complaint.date).toLocaleDateString('en-US', {
                                   month: 'short',
@@ -1132,7 +883,13 @@ function UserDashboard() {
                                 </span>
                               </td>
                               <td>
-                                <button className="view-btn-premium">
+                                <button
+                                  className="view-btn-premium cursor-pointer"
+                                  onClick={() => {
+                                    setSelectedComplaint(complaint);
+                                    setIsModalOpen(true);
+                                  }}
+                                >
                                   View <ArrowUpRight size={12} />
                                 </button>
                               </td>
@@ -1143,6 +900,13 @@ function UserDashboard() {
                     </div>
                   )}
                 </section>
+
+                {/* Complaint Detail Modal */}
+                <ComplaintModal
+                  isOpen={isModalOpen}
+                  complaint={selectedComplaint}
+                  onClose={() => setIsModalOpen(false)}
+                />
               </>
             )}
           </main>

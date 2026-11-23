@@ -649,30 +649,6 @@ function EditComplaintModal({ complaint, isOpen, onClose, onUpdate }) {
 
       <div className="edit-modal-overlay" onClick={onClose}>
         <div className="edit-modal-content" onClick={(e) => e.stopPropagation()}>
-          
-          {/* Soap Bubbles */}
-          {bubbles.map((bubble, index) => (
-            <div
-              key={index}
-              className="edit-bubble bubble-float-edit"
-              style={{
-                width: bubble.size,
-                height: bubble.size,
-                top: bubble.top || 'auto',
-                right: bubble.right || 'auto',
-                bottom: bubble.bottom || 'auto',
-                left: bubble.left || 'auto',
-                '--duration': bubble.duration,
-                '--delay': bubble.delay,
-                background: `linear-gradient(135deg, rgba(139,92,246,0.06), rgba(124,58,237,0.03))`,
-              }}
-            >
-              <div className="edit-bubble-inner" />
-              <div className="edit-bubble-shine" />
-              <div className="edit-bubble-shine-2" />
-            </div>
-          ))}
-
           {/* Header */}
           <div className="edit-modal-header">
             <div className="edit-modal-header-left">

@@ -38,10 +38,10 @@ function AllComplaints() {
 
   // Status options - ONLY the ones in your system
   const statusOptions = [
-    { value: "Pending", label: "Pending", color: "#fbbf24", icon: "⏳" },
-    { value: "In Progress", label: "In Progress", color: "#818cf8", icon: "🔄" },
-    { value: "Resolved", label: "Resolved", color: "#34d399", icon: "✅" },
-    { value: "Rejected", label: "Rejected", color: "#f87171", icon: "❌" },
+    { value: "Pending", label: "Pending", color: "#f59e0b", icon: "⏳" },
+    { value: "In Progress", label: "In Progress", color: "#2563eb", icon: "🔄" },
+    { value: "Resolved", label: "Resolved", color: "#16a34a", icon: "✅" },
+    { value: "Rejected", label: "Rejected", color: "#e11d48", icon: "❌" },
   ];
 
   // Categories from your system
@@ -80,7 +80,7 @@ function AllComplaints() {
       setUpdating(true);
       const response = await api.put(`/admin/complaints/${complaintId}/status`, { status });
       if (response.data.success) {
-        setComplaints(complaints.map(c => 
+        setComplaints(complaints.map(c =>
           c._id === complaintId ? { ...c, status } : c
         ));
         setShowStatusModal(false);
@@ -96,7 +96,7 @@ function AllComplaints() {
 
   const getStatusInfo = (status) => {
     const found = statusOptions.find(s => s.value === status);
-    return found || { value: status, label: status, color: "#94a3b8", icon: "📋" };
+    return found || { value: status, label: status, color: "#64748b", icon: "📋" };
   };
 
   const getStatusClass = (status) => {
@@ -131,19 +131,19 @@ function AllComplaints() {
 
   // Filter complaints
   const filteredComplaints = complaints.filter(complaint => {
-    const matchesSearch = 
+    const matchesSearch =
       complaint.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       complaint.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       complaint._id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       complaint.category?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = filterStatus === "All" || complaint.status === filterStatus;
     const matchesCategory = filterCategory === "All" || complaint.category === filterCategory;
-    
+
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
-  // Statistics - ONLY real statuses
+  // Statistics
   const stats = {
     total: complaints.length,
     pending: complaints.filter(c => c.status === "Pending").length,
@@ -155,12 +155,15 @@ function AllComplaints() {
   return (
     <>
       <style>{`
+        /* ========================================
+           ALL COMPLAINTS - PROFESSIONAL WHITE THEME
+           ======================================== */
+
         .all-complaints-wrapper {
           min-height: 100vh;
-          background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%);
+          background: #f8fafc;
           display: flex;
           position: relative;
-          overflow: hidden;
         }
 
         .all-complaints-main {
@@ -169,23 +172,7 @@ function AllComplaints() {
           min-width: 0;
           position: relative;
           z-index: 1;
-        }
-
-        .all-complaints-main::before {
-          content: '';
-          position: fixed;
-          top: -50%;
-          right: -50%;
-          width: 200%;
-          height: 200%;
-          background: radial-gradient(circle at 70% 30%, rgba(99,102,241,0.05) 0%, transparent 50%);
-          animation: rotateGlow 20s linear infinite;
-          pointer-events: none;
-        }
-
-        @keyframes rotateGlow {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          background: #f8fafc;
         }
 
         /* Page Header */
@@ -195,7 +182,7 @@ function AllComplaints() {
           align-items: center;
           flex-wrap: wrap;
           gap: 16px;
-          margin-bottom: 28px;
+          margin-bottom: 24px;
         }
 
         .page-header .header-left {
@@ -205,61 +192,63 @@ function AllComplaints() {
         }
 
         .page-header .header-left .header-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 16px;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
           display: grid;
           place-items: center;
-          background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15));
-          border: 1px solid rgba(99,102,241,0.15);
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
         }
 
         .page-header .header-left .header-icon svg {
-          color: #818cf8;
+          color: #2563eb;
         }
 
         .page-header .header-left h1 {
-          color: #f1f5f9;
-          font-size: 28px;
-          font-weight: 700;
+          color: #0f172a;
+          font-size: 26px;
+          font-weight: 800;
           margin: 0;
         }
 
         .page-header .header-left p {
-          color: #94a3b8;
+          color: #64748b;
           font-size: 14px;
           margin: 4px 0 0;
         }
 
         .page-header .header-left .total-count {
           display: inline-block;
-          padding: 2px 12px;
+          padding: 2px 10px;
           border-radius: 20px;
-          background: rgba(99,102,241,0.15);
-          color: #818cf8;
-          font-size: 13px;
-          font-weight: 600;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          color: #2563eb;
+          font-size: 12px;
+          font-weight: 700;
           margin-left: 8px;
         }
 
         .btn-refresh {
-          display: flex;
+          display: inline-flex;
           align-items: center;
           gap: 8px;
-          padding: 10px 20px;
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 14px;
-          background: rgba(255,255,255,0.05);
-          color: #94a3b8;
+          padding: 10px 18px;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          background: #ffffff;
+          color: #475569;
           font-weight: 600;
+          font-size: 13px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .btn-refresh:hover {
-          background: rgba(255,255,255,0.08);
-          color: #f1f5f9;
-          transform: translateY(-2px);
+          background: #f8fafc;
+          color: #0f172a;
+          border-color: #cbd5e1;
         }
 
         .btn-refresh .spinning {
@@ -270,42 +259,44 @@ function AllComplaints() {
           to { transform: rotate(360deg); }
         }
 
-        /* Stats Row - ONLY real statuses */
+        /* Stats Row */
         .stats-row {
           display: grid;
           grid-template-columns: repeat(5, 1fr);
-          gap: 12px;
+          gap: 14px;
           margin-bottom: 24px;
         }
 
         .stat-item {
-          padding: 14px 16px;
+          padding: 14px 18px;
           border-radius: 14px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.06);
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
           text-align: center;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           cursor: pointer;
         }
 
         .stat-item:hover {
-          transform: translateY(-4px);
-          border-color: rgba(99,102,241,0.2);
-          box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+          transform: translateY(-2px);
+          border-color: #cbd5e1;
+          box-shadow: 0 6px 16px rgba(0,0,0,0.04);
         }
 
         .stat-item .stat-number {
           font-size: 24px;
           font-weight: 800;
-          color: #f1f5f9;
+          color: #0f172a;
         }
 
         .stat-item .stat-label {
           font-size: 11px;
-          color: #94a3b8;
+          color: #64748b;
           margin-top: 2px;
-          font-weight: 500;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
 
         .stat-item .stat-icon-small {
@@ -315,8 +306,8 @@ function AllComplaints() {
         }
 
         .stat-item.active {
-          border-color: rgba(99,102,241,0.3);
-          background: rgba(99,102,241,0.08);
+          border-color: #2563eb;
+          background: #eff6ff;
         }
 
         /* Filters */
@@ -327,9 +318,9 @@ function AllComplaints() {
           margin-bottom: 24px;
           padding: 16px 20px;
           border-radius: 16px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.06);
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
         .search-box {
@@ -337,114 +328,107 @@ function AllComplaints() {
           align-items: center;
           gap: 10px;
           flex: 1;
-          min-width: 200px;
+          min-width: 220px;
           padding: 10px 16px;
           border-radius: 12px;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.06);
-          transition: all 0.3s ease;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          transition: all 0.2s ease;
         }
 
         .search-box:focus-within {
-          border-color: #6366f1;
-          box-shadow: 0 0 30px rgba(99,102,241,0.1);
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+          background: #ffffff;
         }
 
         .search-box input {
           background: transparent;
           border: none;
           outline: none;
-          color: #f1f5f9;
+          color: #0f172a;
           font-size: 14px;
           width: 100%;
         }
 
         .search-box input::placeholder {
-          color: #64748b;
+          color: #94a3b8;
         }
 
         .filter-select {
           padding: 10px 16px;
           border-radius: 12px;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.06);
-          color: #cbd5e1;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #334155;
           font-size: 14px;
+          font-weight: 500;
           cursor: pointer;
           outline: none;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           min-width: 140px;
         }
 
         .filter-select:focus {
-          border-color: #6366f1;
+          border-color: #2563eb;
+          background: #ffffff;
         }
 
         .filter-select option {
-          background: #1a1a2e;
-          color: #f1f5f9;
+          background: #ffffff;
+          color: #0f172a;
         }
 
         /* Complaints Table */
         .complaints-table-card {
-          padding: 24px;
-          border-radius: 24px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.08);
-          transition: all 0.4s ease;
-        }
-
-        .complaints-table-card:hover {
-          border-color: rgba(255,255,255,0.12);
+          padding: 24px 28px;
+          border-radius: 18px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
         .table-wrapper {
           overflow-x: auto;
+          border-radius: 12px;
+          border: 1px solid #f1f5f9;
         }
 
         .complaints-table-card table {
           width: 100%;
-          border-collapse: separate;
-          border-spacing: 0 8px;
+          border-collapse: collapse;
         }
 
         .complaints-table-card th {
-          color: #94a3b8;
+          color: #475569;
           font-size: 11px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.5px;
           padding: 12px 16px;
           text-align: left;
-          background: rgba(255,255,255,0.03);
-          border-radius: 10px;
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
         }
 
         .complaints-table-card td {
           padding: 14px 16px;
-          color: #e2e8f0;
+          color: #1e293b;
           font-size: 14px;
-          background: rgba(255,255,255,0.02);
-          border-radius: 10px;
-          transition: all 0.3s ease;
+          background: #ffffff;
+          border-bottom: 1px solid #f1f5f9;
+          transition: background 0.15s ease;
           vertical-align: middle;
         }
 
-        .complaints-table-card tbody tr {
-          transition: all 0.3s ease;
-        }
-
         .complaints-table-card tbody tr:hover td {
-          background: rgba(99,102,241,0.06);
-          transform: scale(1.01);
+          background: #f8fafc;
         }
 
         .complaint-id {
           font-family: monospace;
           font-weight: 600;
-          color: #818cf8;
+          color: #2563eb;
           font-size: 13px;
         }
 
@@ -452,126 +436,115 @@ function AllComplaints() {
           display: flex;
           align-items: center;
           gap: 8px;
+          font-weight: 500;
         }
 
         .user-avatar-small {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
+          width: 26px;
+          height: 26px;
+          border-radius: 8px;
           display: grid;
           place-items: center;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          background: #eff6ff;
           font-size: 11px;
           font-weight: 700;
-          color: white;
+          color: #2563eb;
         }
 
         .status-badge {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 6px 14px;
+          padding: 4px 12px;
           border-radius: 20px;
           font-size: 12px;
-          font-weight: 700;
-          transition: all 0.3s ease;
+          font-weight: 600;
+          transition: all 0.2s ease;
           cursor: pointer;
-          border: none;
         }
 
         .status-badge:hover {
-          transform: scale(1.05);
+          transform: scale(1.04);
         }
 
         .status-badge.pending {
-          background: rgba(245,158,11,0.15);
-          color: #fbbf24;
-          border: 1px solid rgba(245,158,11,0.2);
+          background: #fef3c7;
+          color: #b45309;
+          border: 1px solid #fde68a;
         }
 
         .status-badge.progress {
-          background: rgba(99,102,241,0.15);
-          color: #818cf8;
-          border: 1px solid rgba(99,102,241,0.2);
+          background: #eff6ff;
+          color: #1d4ed8;
+          border: 1px solid #bfdbfe;
         }
 
         .status-badge.resolved {
-          background: rgba(16,185,129,0.15);
-          color: #34d399;
-          border: 1px solid rgba(16,185,129,0.2);
+          background: #dcfce7;
+          color: #15803d;
+          border: 1px solid #bbf7d0;
         }
 
         .status-badge.rejected {
-          background: rgba(239,68,68,0.15);
-          color: #f87171;
-          border: 1px solid rgba(239,68,68,0.2);
+          background: #ffe4e6;
+          color: #be123c;
+          border: 1px solid #fecdd3;
         }
 
         .btn-action {
-          padding: 6px 14px;
-          border: none;
-          border-radius: 10px;
-          background: rgba(99,102,241,0.12);
-          color: #818cf8;
+          padding: 6px 12px;
+          border-radius: 8px;
           font-weight: 600;
           font-size: 12px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-        }
-
-        .btn-action:hover {
-          background: rgba(99,102,241,0.25);
-          transform: translateX(4px);
+          gap: 4px;
         }
 
         .btn-action.view-btn {
-          background: rgba(99,102,241,0.12);
-          color: #818cf8;
+          background: #eff6ff;
+          color: #2563eb;
+          border: 1px solid #bfdbfe;
         }
 
         .btn-action.view-btn:hover {
-          background: rgba(99,102,241,0.25);
+          background: #2563eb;
+          color: #ffffff;
         }
 
         .btn-action.status-btn {
-          background: rgba(52,211,153,0.12);
-          color: #34d399;
+          background: #f0fdf4;
+          color: #16a34a;
+          border: 1px solid #bbf7d0;
         }
 
         .btn-action.status-btn:hover {
-          background: rgba(52,211,153,0.25);
+          background: #16a34a;
+          color: #ffffff;
         }
 
         /* Status Update Modal */
         .modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0,0,0,0.7);
-          backdrop-filter: blur(10px);
+          background: rgba(15, 23, 42, 0.45);
+          backdrop-filter: blur(6px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 1000;
-          animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
         }
 
         .modal-content {
           max-width: 500px;
           width: 90%;
-          padding: 32px;
-          border-radius: 24px;
-          background: rgba(26, 26, 46, 0.95);
-          backdrop-filter: blur(30px);
-          border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 20px 80px rgba(0,0,0,0.5);
+          padding: 30px;
+          border-radius: 20px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
           max-height: 90vh;
           overflow-y: auto;
         }
@@ -584,28 +557,29 @@ function AllComplaints() {
         }
 
         .modal-header h2 {
-          color: #f1f5f9;
-          font-size: 22px;
-          font-weight: 700;
+          color: #0f172a;
+          font-size: 20px;
+          font-weight: 800;
           margin: 0;
         }
 
         .modal-close {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          border: none;
-          background: rgba(255,255,255,0.05);
-          color: #94a3b8;
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          color: #64748b;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: grid;
           place-items: center;
         }
 
         .modal-close:hover {
-          background: rgba(239,68,68,0.15);
-          color: #f87171;
+          background: #fef2f2;
+          color: #ef4444;
+          border-color: #fecaca;
         }
 
         .modal-body {
@@ -614,23 +588,24 @@ function AllComplaints() {
 
         .modal-body .complaint-info {
           padding: 16px;
-          border-radius: 12px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.06);
-          margin-bottom: 16px;
+          border-radius: 14px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          margin-bottom: 18px;
         }
 
         .modal-body .complaint-info .label {
-          color: #94a3b8;
-          font-size: 12px;
-          font-weight: 600;
+          color: #64748b;
+          font-size: 11px;
+          font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
 
         .modal-body .complaint-info .value {
-          color: #f1f5f9;
-          font-size: 15px;
+          color: #0f172a;
+          font-size: 14px;
+          font-weight: 600;
           margin-top: 2px;
         }
 
@@ -641,35 +616,34 @@ function AllComplaints() {
         }
 
         .status-option {
-          padding: 14px 16px;
-          border-radius: 14px;
-          border: 2px solid rgba(255,255,255,0.06);
-          background: rgba(255,255,255,0.03);
-          color: #94a3b8;
+          padding: 12px 14px;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
+          color: #334155;
           font-weight: 600;
-          font-size: 14px;
+          font-size: 13px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           gap: 10px;
         }
 
         .status-option:hover {
-          border-color: rgba(255,255,255,0.15);
-          background: rgba(255,255,255,0.06);
-          transform: translateY(-2px);
+          border-color: #cbd5e1;
+          background: #f1f5f9;
         }
 
         .status-option.selected {
-          border-color: #6366f1;
-          background: rgba(99,102,241,0.1);
-          color: #f1f5f9;
+          border-color: #2563eb;
+          background: #eff6ff;
+          color: #2563eb;
         }
 
         .status-option .status-dot {
-          width: 12px;
-          height: 12px;
+          width: 10px;
+          height: 10px;
           border-radius: 50%;
           flex-shrink: 0;
         }
@@ -681,31 +655,33 @@ function AllComplaints() {
 
         .btn-modal-cancel {
           flex: 1;
-          padding: 12px;
-          border: 1px solid rgba(255,255,255,0.08);
+          padding: 10px 16px;
+          border: 1px solid #e2e8f0;
           border-radius: 12px;
-          background: rgba(255,255,255,0.05);
-          color: #94a3b8;
+          background: #ffffff;
+          color: #64748b;
           font-weight: 600;
+          font-size: 14px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .btn-modal-cancel:hover {
-          background: rgba(255,255,255,0.08);
-          color: #f1f5f9;
+          background: #f1f5f9;
+          color: #0f172a;
         }
 
         .btn-modal-update {
           flex: 2;
-          padding: 12px;
+          padding: 10px 16px;
           border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          background: #2563eb;
           color: white;
           font-weight: 600;
+          font-size: 14px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -713,8 +689,7 @@ function AllComplaints() {
         }
 
         .btn-modal-update:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 30px rgba(99,102,241,0.3);
+          background: #1d4ed8;
         }
 
         .btn-modal-update:disabled {
@@ -725,30 +700,32 @@ function AllComplaints() {
         .empty-state {
           text-align: center;
           padding: 60px 20px;
-          color: #94a3b8;
+          color: #64748b;
         }
 
         .empty-state .empty-icon {
-          font-size: 56px;
-          margin-bottom: 16px;
+          font-size: 52px;
+          margin-bottom: 14px;
         }
 
         .empty-state h3 {
-          color: #f1f5f9;
-          margin: 0 0 8px;
+          color: #0f172a;
+          margin: 0 0 6px;
+          font-size: 18px;
+          font-weight: 700;
         }
 
         .loading-state {
           text-align: center;
           padding: 60px 20px;
-          color: #94a3b8;
+          color: #64748b;
         }
 
         .loading-state .spinner {
-          width: 48px;
-          height: 48px;
-          border: 3px solid rgba(255,255,255,0.05);
-          border-top: 3px solid #6366f1;
+          width: 42px;
+          height: 42px;
+          border: 3px solid #e2e8f0;
+          border-top: 3px solid #2563eb;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
           margin: 0 auto 16px;
@@ -756,40 +733,41 @@ function AllComplaints() {
 
         .error-state {
           text-align: center;
-          padding: 60px 20px;
-          color: #f87171;
-          background: rgba(239,68,68,0.08);
+          padding: 40px 20px;
+          color: #b91c1c;
+          background: #fef2f2;
           border-radius: 16px;
-          border: 1px solid rgba(239,68,68,0.15);
+          border: 1px solid #fecaca;
         }
 
         /* Detail Modal Styles */
         .detail-row {
           display: flex;
-          padding: 8px 0;
-          border-bottom: 1px solid rgba(255,255,255,0.04);
+          padding: 10px 0;
+          border-bottom: 1px solid #f1f5f9;
         }
 
         .detail-row .detail-label {
-          color: #94a3b8;
+          color: #64748b;
           font-size: 13px;
-          font-weight: 500;
-          width: 100px;
+          font-weight: 600;
+          width: 120px;
           flex-shrink: 0;
         }
 
         .detail-row .detail-value {
-          color: #f1f5f9;
+          color: #0f172a;
           font-size: 14px;
+          font-weight: 500;
           flex: 1;
         }
 
         .detail-description {
           padding: 12px 16px;
-          border-radius: 10px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
-          color: #e2e8f0;
+          border-radius: 12px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #334155;
           font-size: 14px;
           line-height: 1.6;
         }
@@ -835,18 +813,12 @@ function AllComplaints() {
 
           .detail-row {
             flex-direction: column;
-            padding: 6px 0;
+            padding: 8px 0;
           }
 
           .detail-row .detail-label {
             width: 100%;
             font-size: 11px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .stats-row {
-            grid-template-columns: 1fr 1fr;
           }
         }
       `}</style>
@@ -871,34 +843,34 @@ function AllComplaints() {
               </div>
             </div>
             <button className="btn-refresh" onClick={fetchAllComplaints}>
-              <RefreshCw size={18} className={loading ? "spinning" : ""} />
+              <RefreshCw size={16} className={loading ? "spinning" : ""} />
               Refresh
             </button>
           </div>
 
-          {/* Stats Row - ONLY real statuses */}
+          {/* Stats Row */}
           <div className="stats-row">
-            <div className="stat-item" onClick={() => setFilterStatus("All")}>
+            <div className={`stat-item ${filterStatus === 'All' ? 'active' : ''}`} onClick={() => setFilterStatus("All")}>
               <span className="stat-icon-small">📊</span>
               <div className="stat-number">{stats.total}</div>
               <div className="stat-label">Total</div>
             </div>
-            <div className="stat-item" onClick={() => setFilterStatus("Pending")}>
+            <div className={`stat-item ${filterStatus === 'Pending' ? 'active' : ''}`} onClick={() => setFilterStatus("Pending")}>
               <span className="stat-icon-small">⏳</span>
               <div className="stat-number">{stats.pending}</div>
               <div className="stat-label">Pending</div>
             </div>
-            <div className="stat-item" onClick={() => setFilterStatus("In Progress")}>
+            <div className={`stat-item ${filterStatus === 'In Progress' ? 'active' : ''}`} onClick={() => setFilterStatus("In Progress")}>
               <span className="stat-icon-small">🔄</span>
               <div className="stat-number">{stats.inProgress}</div>
               <div className="stat-label">In Progress</div>
             </div>
-            <div className="stat-item" onClick={() => setFilterStatus("Resolved")}>
+            <div className={`stat-item ${filterStatus === 'Resolved' ? 'active' : ''}`} onClick={() => setFilterStatus("Resolved")}>
               <span className="stat-icon-small">✅</span>
               <div className="stat-number">{stats.resolved}</div>
               <div className="stat-label">Resolved</div>
             </div>
-            <div className="stat-item" onClick={() => setFilterStatus("Rejected")}>
+            <div className={`stat-item ${filterStatus === 'Rejected' ? 'active' : ''}`} onClick={() => setFilterStatus("Rejected")}>
               <span className="stat-icon-small">❌</span>
               <div className="stat-number">{stats.rejected}</div>
               <div className="stat-label">Rejected</div>
@@ -908,7 +880,7 @@ function AllComplaints() {
           {/* Filters */}
           <div className="filters-bar">
             <div className="search-box">
-              <Search size={18} color="#64748b" />
+              <Search size={18} color="#94a3b8" />
               <input
                 type="text"
                 placeholder="Search by title, user, ID, or category..."
@@ -955,8 +927,9 @@ function AllComplaints() {
                     padding: '8px 20px',
                     border: 'none',
                     borderRadius: '10px',
-                    background: '#6366f1',
+                    background: '#2563eb',
                     color: 'white',
+                    fontWeight: 600,
                     cursor: 'pointer'
                   }}
                 >
@@ -1001,22 +974,24 @@ function AllComplaints() {
                             {complaint.user?.name || "Unknown"}
                           </div>
                         </td>
-                        <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <td style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>
                           {complaint.title || "Untitled"}
                         </td>
                         <td>
                           <span style={{
-                            padding: '2px 10px',
-                            borderRadius: '20px',
-                            background: 'rgba(255,255,255,0.06)',
-                            color: '#94a3b8',
-                            fontSize: '12px',
+                            padding: '3px 10px',
+                            borderRadius: '8px',
+                            background: '#f1f5f9',
+                            border: '1px solid #e2e8f0',
+                            color: '#334155',
+                            fontSize: '11px',
+                            fontWeight: 600,
                             whiteSpace: 'nowrap'
                           }}>
                             {complaint.category}
                           </span>
                         </td>
-                        <td style={{ whiteSpace: 'nowrap' }}>
+                        <td style={{ whiteSpace: 'nowrap', color: '#64748b' }}>
                           {formatDate(complaint.createdAt)}
                         </td>
                         <td>
@@ -1034,24 +1009,24 @@ function AllComplaints() {
                         <td>
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                             <button
-                              className="btn-action view-btn"
+                              className="btn-action view-btn cursor-pointer"
                               onClick={() => {
                                 setSelectedComplaint(complaint);
                                 setShowDetailModal(true);
                               }}
                             >
-                              <Eye size={14} />
+                              <Eye size={13} />
                               View
                             </button>
                             <button
-                              className="btn-action status-btn"
+                              className="btn-action status-btn cursor-pointer"
                               onClick={() => {
                                 setSelectedComplaint(complaint);
                                 setNewStatus(complaint.status);
                                 setShowStatusModal(true);
                               }}
                             >
-                              <PenTool size={14} />
+                              <PenTool size={13} />
                               Status
                             </button>
                           </div>
@@ -1071,7 +1046,7 @@ function AllComplaints() {
                 <div className="modal-header">
                   <h2>Update Status</h2>
                   <button className="modal-close" onClick={() => setShowStatusModal(false)}>
-                    <X size={20} />
+                    <X size={18} />
                   </button>
                 </div>
 
@@ -1079,10 +1054,10 @@ function AllComplaints() {
                   <div className="complaint-info">
                     <div className="label">Complaint</div>
                     <div className="value">{selectedComplaint.title}</div>
-                    <div className="label" style={{ marginTop: '8px' }}>User</div>
+                    <div className="label" style={{ marginTop: '10px' }}>User</div>
                     <div className="value">{selectedComplaint.user?.name}</div>
-                    <div className="label" style={{ marginTop: '8px' }}>Current Status</div>
-                    <div className="value">
+                    <div className="label" style={{ marginTop: '10px' }}>Current Status</div>
+                    <div className="value" style={{ marginTop: '4px' }}>
                       <span className={getStatusClass(selectedComplaint.status)}>
                         {getStatusInfo(selectedComplaint.status).icon} {selectedComplaint.status}
                       </span>
@@ -1114,12 +1089,12 @@ function AllComplaints() {
                   >
                     {updating ? (
                       <>
-                        <Loader size={18} className="animate-spin" />
+                        <Loader size={16} className="animate-spin" />
                         Updating...
                       </>
                     ) : (
                       <>
-                        <Check size={18} />
+                        <Check size={16} />
                         Update Status
                       </>
                     )}
@@ -1136,7 +1111,7 @@ function AllComplaints() {
                 <div className="modal-header">
                   <h2>Complaint Details</h2>
                   <button className="modal-close" onClick={() => setShowDetailModal(false)}>
-                    <X size={20} />
+                    <X size={18} />
                   </button>
                 </div>
 
@@ -1144,7 +1119,7 @@ function AllComplaints() {
                   <div className="complaint-info">
                     <div className="detail-row">
                       <span className="detail-label">Complaint ID</span>
-                      <span className="detail-value" style={{ fontFamily: 'monospace', color: '#818cf8' }}>
+                      <span className="detail-value" style={{ fontFamily: 'monospace', color: '#2563eb' }}>
                         #{selectedComplaint._id?.slice(-6).toUpperCase()}
                       </span>
                     </div>
@@ -1181,7 +1156,7 @@ function AllComplaints() {
                   </div>
 
                   <div style={{ marginTop: '16px' }}>
-                    <div className="label" style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                    <div className="label" style={{ color: '#64748b', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
                       Description
                     </div>
                     <div className="detail-description">
@@ -1191,17 +1166,17 @@ function AllComplaints() {
 
                   {selectedComplaint.photo && (
                     <div style={{ marginTop: '16px' }}>
-                      <div className="label" style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                      <div className="label" style={{ color: '#64748b', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
                         Attachment
                       </div>
-                      <img 
-                        src={selectedComplaint.photo} 
+                      <img
+                        src={selectedComplaint.photo}
                         alt="Complaint attachment"
                         style={{
                           maxWidth: '100%',
                           maxHeight: '200px',
                           borderRadius: '12px',
-                          border: '1px solid rgba(255,255,255,0.08)',
+                          border: '1px solid #e2e8f0',
                           objectFit: 'cover'
                         }}
                       />
@@ -1210,8 +1185,8 @@ function AllComplaints() {
                 </div>
 
                 <div className="modal-footer">
-                  <button 
-                    className="btn-modal-cancel" 
+                  <button
+                    className="btn-modal-cancel"
                     onClick={() => setShowDetailModal(false)}
                     style={{ flex: 1 }}
                   >
@@ -1226,7 +1201,7 @@ function AllComplaints() {
                     }}
                     style={{ flex: 1 }}
                   >
-                    <PenTool size={18} />
+                    <PenTool size={16} />
                     Update Status
                   </button>
                 </div>

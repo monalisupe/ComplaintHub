@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Shield,
@@ -9,77 +9,82 @@ import {
   EyeOff,
   ArrowRight,
   Sparkles,
-  Star,
   AlertCircle,
   CheckCircle,
+  Check,
+  X,
 } from "lucide-react";
 import api from "../services/api";
 
-function SignUp() {
+export default function SignUp() {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [agreeTerms, setAgreeTerms] = useState(true);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [success, setSuccess] = useState("");
 
-  // Password strength indicators
-  const [passwordStrength, setPasswordStrength] = useState({
-    score: 0,
-    hasLength: false,
-    hasUpperCase: false,
-    hasLowerCase: false,
-    hasNumber: false,
-    hasSpecial: false,
-  });
+  // Password criteria computation
+  const criteria = {
+    hasLength: password.length >= 8,
+    hasUpper: /[A-Z]/.test(password),
+    hasLower: /[a-z]/.test(password),
+    hasNumber: /[0-9]/.test(password),
+    hasSpecial: /[^A-Za-z0-9]/.test(password),
+  };
 
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  const strengthScore = Object.values(criteria).filter(Boolean).length;
 
-  // Check password strength
-  useEffect(() => {
-    const strength = {
-      hasLength: password.length >= 8,
-      hasUpperCase: /[A-Z]/.test(password),
-      hasLowerCase: /[a-z]/.test(password),
-      hasNumber: /[0-9]/.test(password),
-      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-    };
-    
-    const score = Object.values(strength).filter(Boolean).length;
-    setPasswordStrength({ ...strength, score });
-  }, [password]);
+  const getStrengthTier = () => {
+    if (password.length === 0) return { label: "None", color: "bg-slate-200", text: "text-slate-400", percent: 0 };
+    if (strengthScore <= 2) return { label: "Weak", color: "bg-rose-500", text: "text-rose-600", percent: 25 };
+    if (strengthScore === 3) return { label: "Fair", color: "bg-amber-500", text: "text-amber-600", percent: 50 };
+    if (strengthScore === 4) return { label: "Good", color: "bg-blue-600", text: "text-blue-600", percent: 75 };
+    return { label: "Strong & Secure", color: "bg-emerald-600", text: "text-emerald-600", percent: 100 };
+  };
+
+  const strength = getStrengthTier();
+  const passwordsMatch = password.length > 0 && confirmPassword.length > 0 && password === confirmPassword;
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+
+  // Autofill random test citizen
+  const fillSampleData = () => {
+    const randomId = Math.floor(Math.random() * 900 + 100);
+    setName(`Citizen User ${randomId}`);
+    setEmail(`citizen${randomId}@example.com`);
+    setPassword("SecurePass@123");
+    setConfirmPassword("SecurePass@123");
+    setError("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ FIX 1: Check if all fields are filled
-    if (!name || !email || !password || !confirmPassword) {
-      setError("Please fill all fields");
+    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+      setError("Please fill out all required fields.");
       return;
     }
 
-    // ✅ FIX 2: Check if passwords match
     if (password !== confirmPassword) {
-      setError("Passwords do not match!");
+      setError("Passwords do not match. Please verify both fields.");
       return;
     }
 
-    // ✅ FIX 3: Check password strength
-    if (passwordStrength.score < 3) {
-      setError("Please create a stronger password!");
+    if (strengthScore < 2) {
+      setError("Please choose a stronger password (at least 8 characters).");
+      return;
+    }
+
+    if (!agreeTerms) {
+      setError("Please accept the Citizen Terms & Privacy Guidelines to proceed.");
       return;
     }
 
@@ -87,606 +92,315 @@ function SignUp() {
       setLoading(true);
       setError("");
 
-      // ✅ FIX 4: Send 'name' instead of 'username' to match backend
-      const response = await api.post("/auth/register", {
-        name,
-        email,
-        password,
+      await api.post("/auth/register", {
+        name: name.trim(),
+        email: email.trim(),
+        password: password.trim(),
       });
 
-      // Show success message
-      alert(response.data.message || "Registration successful!");
-      
-      // ✅ FIX 5: Navigate to login page (adjust if your route is different)
-      navigate("/login");
+      setSuccess("Account registered successfully! Redirecting to sign in...");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (err) {
+      console.error("Registration failed:", err);
       setError(
-        err.response?.data?.message || "Registration failed. Please try again."
+        err.response?.data?.message ||
+          "Registration failed. Server may be offline or user already registered."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // Soap bubble positions for floating animation
-  const bubbles = [
-    { top: '5%', left: '2%', size: '120px', delay: '0s', duration: '8s' },
-    { top: '10%', right: '2%', size: '90px', delay: '0.5s', duration: '7s' },
-    { bottom: '15%', left: '3%', size: '100px', delay: '1s', duration: '9s' },
-    { bottom: '10%', right: '3%', size: '80px', delay: '1.5s', duration: '6s' },
-    { top: '45%', left: '1%', size: '70px', delay: '2s', duration: '8s' },
-    { top: '40%', right: '1%', size: '60px', delay: '2.5s', duration: '7s' },
-    { top: '25%', left: '10%', size: '50px', delay: '3s', duration: '5s' },
-    { bottom: '35%', right: '8%', size: '55px', delay: '3.5s', duration: '6s' },
-  ];
-
-  // Gradient colors for bubbles
-  const bubbleGradients = [
-    'from-cyan-400 to-blue-500',
-    'from-blue-400 to-indigo-500',
-    'from-violet-400 to-purple-500',
-    'from-emerald-400 to-teal-500',
-    'from-rose-400 to-pink-500',
-    'from-amber-400 to-orange-500',
-    'from-sky-400 to-cyan-500',
-    'from-fuchsia-400 to-purple-500',
-  ];
-
-  // Get password strength color and text
-  const getStrengthInfo = () => {
-    const { score } = passwordStrength;
-    if (score === 0) return { color: 'text-slate-500', text: 'No password', width: '0%' };
-    if (score <= 2) return { color: 'text-red-400', text: 'Weak', width: '33%' };
-    if (score === 3) return { color: 'text-orange-400', text: 'Fair', width: '66%' };
-    if (score === 4) return { color: 'text-blue-400', text: 'Good', width: '83%' };
-    return { color: 'text-green-400', text: 'Strong', width: '100%' };
-  };
-
-  const strengthInfo = getStrengthInfo();
-
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-blue-950 flex items-center justify-center px-6 py-8 relative overflow-hidden font-['Poppins',sans-serif]"
-      style={{
-        background: `
-          radial-gradient(ellipse at ${mousePosition.x}px ${mousePosition.y}px, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
-          radial-gradient(ellipse at ${100 - mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-          radial-gradient(ellipse at center, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 1) 100%)
-        `
-      }}
-    >
-      {/* Animated Background Particles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(50)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-cyan-400/10 animate-float-particle"
-            style={{
-              width: Math.random() * 4 + 2 + 'px',
-              height: Math.random() * 4 + 2 + 'px',
-              left: Math.random() * 100 + '%',
-              top: Math.random() * 100 + '%',
-              animationDuration: Math.random() * 15 + 10 + 's',
-              animationDelay: Math.random() * 10 + 's',
-              opacity: Math.random() * 0.5 + 0.1,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Floating Glowing Soap Bubbles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {bubbles.map((bubble, index) => (
-          <div
-            key={index}
-            className={`absolute rounded-full bg-gradient-to-br ${bubbleGradients[index % bubbleGradients.length]} backdrop-blur-md animate-float-slow shadow-[0_0_80px_rgba(34,211,238,0.15)] border border-white/30 cursor-pointer pointer-events-auto hover:scale-110 transition-all duration-700 group`}
-            style={{
-              width: bubble.size,
-              height: bubble.size,
-              top: bubble.top,
-              left: bubble.left || 'auto',
-              right: bubble.right || 'auto',
-              bottom: bubble.bottom || 'auto',
-              animationDuration: bubble.duration,
-              animationDelay: bubble.delay,
-              opacity: 0.4,
-              boxShadow: `0 0 60px rgba(34, 211, 238, 0.1), inset 0 0 60px rgba(255, 255, 255, 0.05)`,
-            }}
-          >
-            {/* Inner glow effect */}
-            <div className="absolute inset-2 rounded-full bg-white/5 backdrop-blur-sm" />
-            <div className="absolute inset-4 rounded-full bg-white/5 backdrop-blur-sm" />
-            
-            {/* Shine effect */}
-            <div className="absolute top-2 left-4 w-8 h-4 bg-white/30 rounded-full blur-sm transform -rotate-45" />
-            <div className="absolute bottom-4 right-3 w-4 h-2 bg-white/20 rounded-full blur-sm transform rotate-45" />
-            
-            {/* Sparkle on hover */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
-                <Star className="w-6 h-6 text-white/30 absolute top-0 left-1/2 transform -translate-x-1/2 animate-pulse" />
-                <Star className="w-4 h-4 text-white/20 absolute bottom-0 left-1/2 transform -translate-x-1/2 animate-pulse delay-300" />
-                <Star className="w-5 h-5 text-white/25 absolute left-0 top-1/2 transform -translate-y-1/2 animate-pulse delay-500" />
-                <Star className="w-5 h-5 text-white/25 absolute right-0 top-1/2 transform -translate-y-1/2 animate-pulse delay-700" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Main Card */}
-      <div className="relative z-10 w-full max-w-md animate-slideUpFadeIn">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6 md:p-8 font-sans">
+      <div className="w-full max-w-md">
         
-        {/* Decorative floating elements around card */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br from-cyan-500/10 to-blue-500/10 blur-2xl animate-pulse" />
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 blur-2xl animate-pulse delay-700" />
-
-        {/* Register Card */}
-        <div className="relative bg-white/5 backdrop-blur-2xl rounded-3xl shadow-[0_0_80px_rgba(34,211,238,0.08)] border border-white/10 p-8 overflow-hidden group hover:shadow-[0_0_100px_rgba(34,211,238,0.12)] transition-all duration-700 max-h-[90vh] overflow-y-auto">
+        {/* Main Clean White Card */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl shadow-slate-200/50 p-7 sm:p-8 transition-all">
           
-          {/* Card Glow Effects */}
-          <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-br from-cyan-500/10 to-blue-500/10 blur-3xl animate-pulse" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 blur-3xl animate-pulse delay-500" />
-          
-          {/* Top Gradient Border */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
-
-          {/* Logo Section */}
-          <div className="flex justify-center mb-6 relative">
-            <div className="relative">
-              {/* Glow ring */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 blur-xl opacity-30 animate-pulse-gentle" />
-              <div className="relative bg-gradient-to-br from-cyan-500 to-blue-600 p-4 rounded-2xl shadow-[0_0_40px_rgba(34,211,238,0.2)] border border-cyan-400/20 group-hover:shadow-[0_0_60px_rgba(34,211,238,0.3)] transition-all duration-500 group-hover:scale-110">
-                <Shield size={36} className="text-white drop-shadow-[0_0_20px_rgba(34,211,238,0.3)]" />
-              </div>
-              {/* Sparkle */}
-              <div className="absolute -top-2 -right-2 animate-pulse">
-                <Sparkles className="w-5 h-5 text-cyan-400 drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]" />
-              </div>
+          {/* Header Brand Section */}
+          <div className="text-center mb-5">
+            <div className="inline-flex items-center justify-center w-13 h-13 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 mb-3 hover:scale-105 transition-transform duration-200">
+              <Shield className="w-6 h-6" />
             </div>
-          </div>
-
-          {/* Heading */}
-          <div className="text-center">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(34,211,238,0.2)] font-['Poppins'] tracking-tight">
-              Create Account
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              Create an Account
             </h1>
-            <p className="text-slate-300 mt-2 font-['Inter'] flex items-center justify-center gap-2">
-              <span>Join ComplaintHub today</span>
-              <span className="text-cyan-400">✦</span>
-              <span className="text-sm text-slate-400">Get started now</span>
+            <p className="text-slate-500 text-xs sm:text-sm mt-1">
+              Join ComplaintHub to track civic resolutions
             </p>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-2 animate-shake">
-              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <p className="text-red-400 text-sm font-['Inter']">{error}</p>
+          {/* Dual Navigation Switcher Tabs */}
+          <div className="flex p-1 mb-4 rounded-xl bg-slate-100 border border-slate-200">
+            <Link
+              to="/login"
+              className="flex-1 py-2 text-sm font-medium text-center text-slate-600 hover:text-slate-900 hover:bg-white/50 rounded-lg transition-all"
+            >
+              Sign In
+            </Link>
+            <button
+              type="button"
+              className="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-blue-600 shadow-sm transition-all"
+            >
+              Create Account
+            </button>
+          </div>
+
+          {/* Quick Sample Data Fill Option */}
+          <div className="flex justify-between items-center mb-4 px-1">
+            <span className="text-xs text-slate-500">Quick Testing:</span>
+            <button
+              type="button"
+              onClick={fillSampleData}
+              className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 transition-colors hover:underline cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" /> Auto-fill Sample User
+            </button>
+          </div>
+
+          {/* Success Notification */}
+          {success && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>{success}</span>
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {/* Error Notification */}
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 font-medium">{error}</div>
+            </div>
+          )}
 
+          {/* Registration Form */}
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* Full Name */}
-            <div className="relative group/name">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/name:text-cyan-400 transition-all duration-300">
-                <User size={20} />
-              </div>
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="
-                  w-full
-                  pl-12
-                  pr-4
-                  py-3.5
-                  rounded-xl
-                  bg-white/5
-                  border
-                  border-white/10
-                  text-white
-                  placeholder-slate-400
-                  focus:outline-none
-                  focus:border-blue-400
-                  focus:ring-2
-                  focus:ring-blue-400/30
-                  focus:shadow-[0_0_30px_rgba(59,130,246,0.15)]
-                  transition-all
-                  duration-300
-                  hover:bg-white/10
-                  font-['Inter']
-                "
-                required
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-focus-within/name:opacity-100 transition-opacity duration-300">
-                <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Full Name
+              </label>
+              <div className="relative group">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors pointer-events-none">
+                  <User className="w-4 h-4" />
+                </div>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Maya Sharma"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm placeholder-slate-400 hover:border-slate-300 focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                />
               </div>
             </div>
 
-            {/* Email */}
-            <div className="relative group/email">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/email:text-cyan-400 transition-all duration-300">
-                <Mail size={20} />
+            {/* Email Address */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Email Address
+              </label>
+              <div className="relative group">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors pointer-events-none">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="maya@example.com"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm placeholder-slate-400 hover:border-slate-300 focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                />
               </div>
-              <input
-                type="email"
-                placeholder="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="
-                  w-full
-                  pl-12
-                  pr-4
-                  py-3.5
-                  rounded-xl
-                  bg-white/5
-                  border
-                  border-white/10
-                  text-white
-                  placeholder-slate-400
-                  focus:outline-none
-                  focus:border-blue-400
-                  focus:ring-2
-                  focus:ring-blue-400/30
-                  focus:shadow-[0_0_30px_rgba(59,130,246,0.15)]
-                  transition-all
-                  duration-300
-                  hover:bg-white/10
-                  font-['Inter']
-                "
-                required
-              />
             </div>
 
             {/* Password */}
-            <div className="relative group/password">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/password:text-cyan-400 transition-all duration-300">
-                <Lock size={20} />
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Password
+              </label>
+              <div className="relative group">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors pointer-events-none">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a strong password"
+                  required
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm placeholder-slate-400 hover:border-slate-300 focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="
-                  w-full
-                  pl-12
-                  pr-12
-                  py-3.5
-                  rounded-xl
-                  bg-white/5
-                  border
-                  border-white/10
-                  text-white
-                  placeholder-slate-400
-                  focus:outline-none
-                  focus:border-blue-400
-                  focus:ring-2
-                  focus:ring-blue-400/30
-                  focus:shadow-[0_0_30px_rgba(59,130,246,0.15)]
-                  transition-all
-                  duration-300
-                  hover:bg-white/10
-                  font-['Inter']
-                "
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-all duration-300 hover:scale-110"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
 
-            {/* Password Strength Indicator */}
-            {password && (
-              <div className="space-y-2 animate-slideUpFadeIn">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-xs font-['Inter']">Password Strength</span>
-                  <span className={`text-xs font-semibold font-['Inter'] ${strengthInfo.color}`}>
-                    {strengthInfo.text}
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      strengthInfo.color.replace('text-', 'bg-')
-                    }`}
-                    style={{ width: strengthInfo.width }}
-                  />
-                </div>
-                <div className="grid grid-cols-5 gap-1">
-                  {['Length', 'Uppercase', 'Lowercase', 'Number', 'Special'].map((label, index) => {
-                    const checks = [
-                      passwordStrength.hasLength,
-                      passwordStrength.hasUpperCase,
-                      passwordStrength.hasLowerCase,
-                      passwordStrength.hasNumber,
-                      passwordStrength.hasSpecial,
-                    ];
-                    return (
-                      <div key={index} className="flex items-center gap-1">
-                        {checks[index] ? (
-                          <CheckCircle className="w-3 h-3 text-green-400" />
-                        ) : (
-                          <div className="w-3 h-3 rounded-full border border-slate-600" />
-                        )}
-                        <span className="text-[8px] text-slate-500 font-['Inter']">{label}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Confirm Password */}
-            <div className="relative group/confirm">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/confirm:text-cyan-400 transition-all duration-300">
-                <Lock size={20} />
-              </div>
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="
-                  w-full
-                  pl-12
-                  pr-12
-                  py-3.5
-                  rounded-xl
-                  bg-white/5
-                  border
-                  border-white/10
-                  text-white
-                  placeholder-slate-400
-                  focus:outline-none
-                  focus:border-blue-400
-                  focus:ring-2
-                  focus:ring-blue-400/30
-                  focus:shadow-[0_0_30px_rgba(59,130,246,0.15)]
-                  transition-all
-                  duration-300
-                  hover:bg-white/10
-                  font-['Inter']
-                "
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-all duration-300 hover:scale-110"
-              >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-              {/* Password match indicator */}
-              {confirmPassword && (
-                <div className="absolute right-12 top-1/2 -translate-y-1/2">
-                  {password === confirmPassword ? (
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-red-400" />
-                  )}
+              {/* Password Strength Meter */}
+              {password.length > 0 && (
+                <div className="pt-1.5 space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500 font-medium">Strength:</span>
+                    <span className={`font-bold ${strength.text}`}>{strength.label}</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden flex gap-1">
+                    <div
+                      className={`h-full transition-all duration-300 rounded-full ${strength.color}`}
+                      style={{ width: `${strength.percent}%` }}
+                    />
+                  </div>
+                  {/* Password Checklist Pills */}
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                    <span
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                        criteria.hasLength
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-slate-50 text-slate-400 border-slate-200"
+                      }`}
+                    >
+                      {criteria.hasLength ? <Check className="w-3 h-3 text-emerald-600" /> : "•"} 8+ chars
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                        criteria.hasUpper
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-slate-50 text-slate-400 border-slate-200"
+                      }`}
+                    >
+                      {criteria.hasUpper ? <Check className="w-3 h-3 text-emerald-600" /> : "•"} Uppercase
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                        criteria.hasNumber
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-slate-50 text-slate-400 border-slate-200"
+                      }`}
+                    >
+                      {criteria.hasNumber ? <Check className="w-3 h-3 text-emerald-600" /> : "•"} Number
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                        criteria.hasSpecial
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-slate-50 text-slate-400 border-slate-200"
+                      }`}
+                    >
+                      {criteria.hasSpecial ? <Check className="w-3 h-3 text-emerald-600" /> : "•"} Symbol
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Sign Up Button */}
+            {/* Confirm Password */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Confirm Password
+              </label>
+              <div className="relative group">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors pointer-events-none">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter password"
+                  required
+                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-50 border text-slate-900 text-sm placeholder-slate-400 hover:border-slate-300 focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none ${
+                    passwordsMismatch ? "border-rose-400 focus:border-rose-600 focus:ring-rose-100" : "border-slate-200"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Match Feedback */}
+              {passwordsMatch && (
+                <p className="text-[11px] text-emerald-600 flex items-center gap-1 font-semibold pt-0.5">
+                  <CheckCircle className="w-3.5 h-3.5" /> Passwords match
+                </p>
+              )}
+              {passwordsMismatch && (
+                <p className="text-[11px] text-rose-600 flex items-center gap-1 font-semibold pt-0.5">
+                  <X className="w-3.5 h-3.5" /> Passwords do not match
+                </p>
+              )}
+            </div>
+
+            {/* Terms and Privacy Checkbox */}
+            <div className="pt-1">
+              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={agreeTerms}
+                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                />
+                <span className="text-xs text-slate-600 leading-relaxed font-medium">
+                  I agree to the{" "}
+                  <span className="text-blue-600 hover:underline">Civic Grievance Terms of Service</span>{" "}
+                  and{" "}
+                  <span className="text-blue-600 hover:underline">Citizen Privacy Policy</span>.
+                </span>
+              </label>
+            </div>
+
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="
-                group/btn
-                w-full
-                relative
-                overflow-hidden
-                bg-gradient-to-r
-                from-cyan-500
-                via-blue-500
-                to-purple-500
-                hover:from-cyan-600
-                hover:via-blue-600
-                hover:to-purple-600
-                py-3.5
-                rounded-xl
-                text-white
-                font-semibold
-                flex
-                justify-center
-                items-center
-                gap-2
-                transition-all
-                duration-300
-                hover:scale-[1.02]
-                hover:shadow-[0_0_50px_rgba(34,211,238,0.4)]
-                disabled:opacity-70
-                disabled:cursor-not-allowed
-                disabled:hover:scale-100
-                font-['Poppins']
-                text-base
-              "
+              className="w-full py-3 px-4 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow-md hover:shadow-blue-500/20 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 text-sm sm:text-base mt-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
-              {/* Button Shine Effect */}
-              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
-              
               {loading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <>
+                  <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                   <span>Creating Account...</span>
-                </div>
+                </>
               ) : (
                 <>
                   <span>Create Account</span>
-                  <ArrowRight
-                    size={20}
-                    className="group-hover/btn:translate-x-1 transition-transform duration-300"
-                  />
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
 
-            {/* Login Link */}
-            <p className="text-center text-slate-300 font-['Inter']">
-              Already have an account?
+            {/* Sign In Link */}
+            <p className="text-center text-xs text-slate-500 pt-1">
+              Already have an account?{" "}
               <Link
                 to="/login"
-                className="
-                  ml-2
-                  font-semibold
-                  text-blue-400
-                  hover:text-purple-400
-                  hover:drop-shadow-[0_0_20px_rgba(139,92,246,0.3)]
-                  transition-all
-                  duration-300
-                  relative
-                  group/register
-                  hover:scale-105
-                  inline-block
-                "
+                className="font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
               >
-                Sign In
-                <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover/register:w-full transition-all duration-300" />
+                Sign In instead
               </Link>
             </p>
-
           </form>
 
-          {/* Decorative Bottom Elements */}
-          <div className="absolute -bottom-4 right-6 w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-md border border-white/10 animate-float-slow shadow-[0_0_30px_rgba(34,211,238,0.05)]" />
-          <div className="absolute -bottom-6 left-6 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-md border border-white/10 animate-float-medium shadow-[0_0_25px_rgba(139,92,246,0.05)]" />
-          
-          {/* Footer decorative text */}
-          <div className="absolute bottom-2 right-4 text-[8px] text-slate-600/50 font-['Inter'] tracking-widest">
-            SECURE • ENCRYPTED
+          {/* Security Badge */}
+          <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+            <span className="flex items-center gap-1">
+              <Shield className="w-3 h-3 text-slate-400" /> End-to-End Encrypted
+            </span>
+            <span className="text-slate-500">Official Portal</span>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-slate-500/60 font-['Inter'] tracking-wide">
-            🔒 Your data is protected with end-to-end encryption
-          </p>
-        </div>
       </div>
-
-      {/* Styles */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
-
-        @keyframes float-slow {
-          0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-          33% { transform: translate(15px, -25px) scale(1.05) rotate(5deg); }
-          66% { transform: translate(-15px, 20px) scale(0.95) rotate(-5deg); }
-        }
-
-        @keyframes float-medium {
-          0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-          33% { transform: translate(-20px, 15px) scale(0.95) rotate(-5deg); }
-          66% { transform: translate(20px, -15px) scale(1.05) rotate(5deg); }
-        }
-
-        @keyframes float-particle {
-          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
-          50% { transform: translate(25px, -35px) scale(1.8); opacity: 0.6; }
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 1; }
-        }
-
-        @keyframes pulse-gentle {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.05); }
-        }
-
-        @keyframes slideUpFadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(30px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-
-        .animate-float-slow {
-          animation: float-slow 8s ease-in-out infinite;
-        }
-
-        .animate-float-medium {
-          animation: float-medium 6s ease-in-out infinite;
-        }
-
-        .animate-float-particle {
-          animation: float-particle 12s ease-in-out infinite;
-        }
-
-        .animate-pulse {
-          animation: pulse 4s ease-in-out infinite;
-        }
-
-        .animate-pulse-gentle {
-          animation: pulse-gentle 3s ease-in-out infinite;
-        }
-
-        .animate-slideUpFadeIn {
-          animation: slideUpFadeIn 0.6s ease-out;
-        }
-
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-
-        /* Custom scrollbar for the card */
-        .max-h-\\[90vh\\]::-webkit-scrollbar {
-          width: 4px;
-        }
-
-        .max-h-\\[90vh\\]::-webkit-scrollbar-track {
-          background: rgba(15, 23, 42, 0.3);
-          border-radius: 10px;
-        }
-
-        .max-h-\\[90vh\\]::-webkit-scrollbar-thumb {
-          background: rgba(34, 211, 238, 0.3);
-          border-radius: 10px;
-        }
-
-        .max-h-\\[90vh\\]::-webkit-scrollbar-thumb:hover {
-          background: rgba(34, 211, 238, 0.5);
-        }
-
-        /* Input autofill style */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover,
-        input:-webkit-autofill:focus,
-        input:-webkit-autofill:active {
-          -webkit-box-shadow: 0 0 0 30px rgba(15, 23, 42, 0.5) inset !important;
-          -webkit-text-fill-color: white !important;
-        }
-
-        /* Selection color */
-        ::selection {
-          background: rgba(34, 211, 238, 0.3);
-          color: white;
-        }
-      `}</style>
     </div>
   );
 }
-
-export default SignUp;

@@ -80,12 +80,10 @@ function Profile() {
       setError("");
       setSuccess("");
 
-      // Use different endpoints for admin and user
       const endpoint = isAdmin ? "/admin/profile" : "/user/profile";
       const response = await api.put(endpoint, formData);
 
       if (response.data.success) {
-        // Update localStorage
         const updatedUser = { ...user, ...formData };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         
@@ -104,7 +102,6 @@ function Profile() {
   };
 
   const handleChangePassword = async () => {
-    // Validation
     if (!passwordData.currentPassword) {
       setError("Current password is required");
       return;
@@ -127,7 +124,6 @@ function Profile() {
       setError("");
       setSuccess("");
 
-      // Use different endpoints for admin and user
       const endpoint = isAdmin ? "/admin/change-password" : "/user/change-password";
       const response = await api.put(endpoint, {
         currentPassword: passwordData.currentPassword,
@@ -171,18 +167,20 @@ function Profile() {
     });
   };
 
-  // Get the correct sidebar based on role
   const SidebarComponent = isAdmin ? AdminSidebar : Sidebar;
 
   return (
     <>
       <style>{`
+        /* ========================================
+           PROFILE - PROFESSIONAL WHITE THEME
+           ======================================== */
+
         .profile-wrapper {
           min-height: 100vh;
-          background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%);
+          background: #f8fafc;
           display: flex;
           position: relative;
-          overflow: hidden;
         }
 
         .profile-main {
@@ -191,23 +189,7 @@ function Profile() {
           min-width: 0;
           position: relative;
           z-index: 1;
-        }
-
-        .profile-main::before {
-          content: '';
-          position: fixed;
-          top: -50%;
-          right: -50%;
-          width: 200%;
-          height: 200%;
-          background: radial-gradient(circle at 70% 30%, rgba(99,102,241,0.05) 0%, transparent 50%);
-          animation: rotateGlow 20s linear infinite;
-          pointer-events: none;
-        }
-
-        @keyframes rotateGlow {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          background: #f8fafc;
         }
 
         /* Page Header */
@@ -217,7 +199,7 @@ function Profile() {
           align-items: center;
           flex-wrap: wrap;
           gap: 16px;
-          margin-bottom: 28px;
+          margin-bottom: 24px;
         }
 
         .page-header .header-left {
@@ -227,70 +209,63 @@ function Profile() {
         }
 
         .page-header .header-left .header-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 16px;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
           display: grid;
           place-items: center;
-          background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15));
-          border: 1px solid rgba(99,102,241,0.15);
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
         }
 
         .page-header .header-left .header-icon svg {
-          color: #818cf8;
+          color: #2563eb;
         }
 
         .page-header .header-left h1 {
-          color: #f1f5f9;
-          font-size: 28px;
-          font-weight: 700;
+          color: #0f172a;
+          font-size: 26px;
+          font-weight: 800;
           margin: 0;
         }
 
         .page-header .header-left p {
-          color: #94a3b8;
+          color: #64748b;
           font-size: 14px;
           margin: 4px 0 0;
         }
 
         /* Profile Card */
         .profile-card {
-          max-width: 700px;
+          max-width: 680px;
           margin: 0 auto;
-          padding: 40px;
-          border-radius: 24px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: 0 8px 40px rgba(0,0,0,0.2);
-          transition: all 0.4s ease;
-        }
-
-        .profile-card:hover {
-          border-color: rgba(99,102,241,0.15);
-          box-shadow: 0 8px 50px rgba(99,102,241,0.05);
+          padding: 36px 40px;
+          border-radius: 20px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
         /* Avatar */
         .profile-avatar {
           text-align: center;
-          margin-bottom: 32px;
+          margin-bottom: 28px;
           position: relative;
         }
 
         .profile-avatar .avatar-circle {
-          width: 100px;
-          height: 100px;
+          width: 88px;
+          height: 88px;
           border-radius: 50%;
           display: grid;
           place-items: center;
           margin: 0 auto;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
-          font-size: 40px;
-          font-weight: 700;
+          background: #2563eb;
+          font-size: 36px;
+          font-weight: 800;
           color: white;
-          box-shadow: 0 8px 30px rgba(99,102,241,0.3);
+          border: 4px solid #eff6ff;
+          box-shadow: 0 4px 14px rgba(37,99,235,0.2);
           position: relative;
         }
 
@@ -298,80 +273,71 @@ function Profile() {
           position: absolute;
           bottom: 0;
           right: 0;
-          width: 36px;
-          height: 36px;
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
-          border: 2px solid #0a0e1a;
+          background: #1d4ed8;
+          border: 2px solid #ffffff;
           display: grid;
           place-items: center;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .profile-avatar .avatar-circle .camera-btn:hover {
           transform: scale(1.1);
-          box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+          background: #2563eb;
         }
 
         .profile-avatar .role-badge {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           margin-top: 12px;
-          padding: 6px 16px;
+          padding: 4px 14px;
           border-radius: 20px;
-          background: rgba(99,102,241,0.15);
-          border: 1px solid rgba(99,102,241,0.2);
-          color: #818cf8;
-          font-size: 12px;
-          font-weight: 600;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          color: #2563eb;
+          font-size: 11px;
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 1px;
+          letter-spacing: 0.5px;
         }
 
-        .profile-avatar .role-badge .role-icon {
-          font-size: 14px;
-        }
-
-        /* Success/Error Messages */
+        /* Messages */
         .message {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 14px 18px;
+          padding: 12px 16px;
           border-radius: 12px;
           margin-bottom: 20px;
-          animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
+          font-size: 14px;
         }
 
         .message.success {
-          background: rgba(16,185,129,0.12);
-          border: 1px solid rgba(16,185,129,0.2);
-          color: #34d399;
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          color: #15803d;
         }
 
         .message.error {
-          background: rgba(239,68,68,0.12);
-          border: 1px solid rgba(239,68,68,0.2);
-          color: #f87171;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #b91c1c;
         }
 
         /* Form Fields */
         .profile-field {
-          margin-bottom: 20px;
+          margin-bottom: 18px;
         }
 
         .profile-field label {
           display: flex;
           align-items: center;
           gap: 8px;
-          color: #94a3b8;
+          color: #334155;
           font-size: 13px;
           font-weight: 600;
           margin-bottom: 6px;
@@ -384,17 +350,18 @@ function Profile() {
         .profile-field .field-value {
           padding: 12px 16px;
           border-radius: 12px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
-          color: #f1f5f9;
-          font-size: 15px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #0f172a;
+          font-size: 14px;
+          font-weight: 500;
           display: flex;
           align-items: center;
           gap: 10px;
         }
 
         .profile-field .field-value svg {
-          color: #64748b;
+          color: #94a3b8;
         }
 
         .profile-field input,
@@ -402,25 +369,25 @@ function Profile() {
           width: 100%;
           padding: 12px 16px;
           border-radius: 12px;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: #f1f5f9;
-          font-size: 15px;
-          transition: all 0.3s ease;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #0f172a;
+          font-size: 14px;
+          transition: all 0.2s ease;
           outline: none;
           font-family: inherit;
         }
 
         .profile-field input:focus,
         .profile-field textarea:focus {
-          border-color: #6366f1;
-          box-shadow: 0 0 30px rgba(99,102,241,0.1);
-          background: rgba(255,255,255,0.08);
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+          background: #ffffff;
         }
 
         .profile-field input::placeholder,
         .profile-field textarea::placeholder {
-          color: #64748b;
+          color: #94a3b8;
         }
 
         .profile-field textarea {
@@ -434,7 +401,7 @@ function Profile() {
           gap: 16px;
         }
 
-        /* Password Field with Toggle */
+        /* Password Field */
         .password-input-wrapper {
           position: relative;
         }
@@ -444,18 +411,18 @@ function Profile() {
           padding: 12px 16px;
           padding-right: 44px;
           border-radius: 12px;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: #f1f5f9;
-          font-size: 15px;
-          transition: all 0.3s ease;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #0f172a;
+          font-size: 14px;
+          transition: all 0.2s ease;
           outline: none;
         }
 
         .password-input-wrapper input:focus {
-          border-color: #6366f1;
-          box-shadow: 0 0 30px rgba(99,102,241,0.1);
-          background: rgba(255,255,255,0.08);
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+          background: #ffffff;
         }
 
         .password-toggle {
@@ -465,68 +432,66 @@ function Profile() {
           transform: translateY(-50%);
           background: none;
           border: none;
-          color: #64748b;
+          color: #94a3b8;
           cursor: pointer;
           padding: 4px;
-          transition: all 0.3s ease;
         }
 
         .password-toggle:hover {
-          color: #f1f5f9;
+          color: #0f172a;
         }
 
         /* Buttons */
         .profile-actions {
           display: flex;
           gap: 12px;
-          margin-top: 28px;
+          margin-top: 24px;
           flex-wrap: wrap;
         }
 
         .btn-edit {
           flex: 1;
-          padding: 14px 24px;
+          padding: 12px 20px;
           border: none;
-          border-radius: 14px;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          border-radius: 12px;
+          background: #2563eb;
           color: white;
           font-weight: 600;
-          font-size: 16px;
+          font-size: 14px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
+          gap: 8px;
           min-width: 120px;
         }
 
         .btn-edit:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 30px rgba(99,102,241,0.3);
+          background: #1d4ed8;
+          transform: translateY(-1px);
         }
 
         .btn-save {
           flex: 1;
-          padding: 14px 24px;
+          padding: 12px 20px;
           border: none;
-          border-radius: 14px;
-          background: linear-gradient(135deg, #10b981, #22c55e);
+          border-radius: 12px;
+          background: #16a34a;
           color: white;
           font-weight: 600;
-          font-size: 16px;
+          font-size: 14px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
+          gap: 8px;
           min-width: 120px;
         }
 
         .btn-save:hover:not(:disabled) {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 30px rgba(16,185,129,0.3);
+          background: #15803d;
         }
 
         .btn-save:disabled {
@@ -535,76 +500,70 @@ function Profile() {
         }
 
         .btn-cancel {
-          padding: 14px 24px;
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 14px;
-          background: rgba(255,255,255,0.05);
-          color: #94a3b8;
+          padding: 12px 20px;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          background: #ffffff;
+          color: #64748b;
           font-weight: 600;
-          font-size: 16px;
+          font-size: 14px;
           cursor: pointer;
-          transition: all 0.3s ease;
-          min-width: 120px;
+          transition: all 0.2s ease;
+          min-width: 100px;
         }
 
         .btn-cancel:hover {
-          background: rgba(255,255,255,0.08);
-          color: #f1f5f9;
-          transform: translateY(-2px);
+          background: #f1f5f9;
+          color: #0f172a;
         }
 
         .btn-change-password {
           width: 100%;
-          padding: 14px;
-          border: 1px solid rgba(99,102,241,0.2);
-          border-radius: 14px;
-          background: rgba(99,102,241,0.08);
-          color: #818cf8;
+          padding: 11px;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          background: #f8fafc;
+          color: #475569;
           font-weight: 600;
-          font-size: 15px;
+          font-size: 13px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
+          gap: 8px;
           margin-top: 8px;
         }
 
         .btn-change-password:hover {
-          background: rgba(99,102,241,0.15);
-          border-color: rgba(99,102,241,0.3);
-          transform: translateY(-2px);
+          background: #eff6ff;
+          border-color: #bfdbfe;
+          color: #2563eb;
         }
 
         .btn-change-password.active {
-          background: rgba(239,68,68,0.1);
-          border-color: rgba(239,68,68,0.2);
-          color: #f87171;
-        }
-
-        .btn-change-password.active:hover {
-          background: rgba(239,68,68,0.15);
+          background: #fef2f2;
+          border-color: #fecaca;
+          color: #b91c1c;
         }
 
         /* Password Change Section */
         .password-section {
-          margin-top: 24px;
+          margin-top: 20px;
           padding: 20px;
-          border-radius: 16px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
-          animation: slideIn 0.3s ease;
+          border-radius: 14px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
         }
 
         .password-section .section-title {
-          color: #f1f5f9;
-          font-size: 16px;
-          font-weight: 600;
-          margin-bottom: 16px;
+          color: #0f172a;
+          font-size: 15px;
+          font-weight: 700;
+          margin-bottom: 14px;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
         }
 
         /* Quick Stats for Admin */
@@ -613,10 +572,10 @@ function Profile() {
           grid-template-columns: repeat(3, 1fr);
           gap: 12px;
           margin-bottom: 24px;
-          padding: 16px;
-          border-radius: 16px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
+          padding: 14px;
+          border-radius: 14px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
         }
 
         .quick-stat {
@@ -624,15 +583,16 @@ function Profile() {
         }
 
         .quick-stat .stat-number {
-          font-size: 24px;
-          font-weight: 700;
-          color: #f1f5f9;
+          font-size: 22px;
+          font-weight: 800;
+          color: #0f172a;
         }
 
         .quick-stat .stat-label {
           font-size: 11px;
-          color: #94a3b8;
-          font-weight: 500;
+          color: #64748b;
+          font-weight: 600;
+          text-transform: uppercase;
         }
 
         @media (max-width: 768px) {
@@ -641,7 +601,7 @@ function Profile() {
           }
 
           .profile-card {
-            padding: 24px;
+            padding: 24px 20px;
           }
 
           .page-header .header-left h1 {
@@ -665,22 +625,6 @@ function Profile() {
 
           .quick-stats {
             grid-template-columns: 1fr 1fr;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .profile-card {
-            padding: 16px;
-          }
-
-          .profile-avatar .avatar-circle {
-            width: 80px;
-            height: 80px;
-            font-size: 30px;
-          }
-
-          .quick-stats {
-            grid-template-columns: 1fr;
           }
         }
       `}</style>
@@ -713,7 +657,7 @@ function Profile() {
               <div className="avatar-circle">
                 {formData.name?.charAt(0)?.toUpperCase() || (isAdmin ? "A" : "U")}
                 <div className="camera-btn">
-                  <Camera size={16} color="white" />
+                  <Camera size={14} color="white" />
                 </div>
               </div>
               <div className="role-badge">
@@ -722,34 +666,16 @@ function Profile() {
               </div>
             </div>
 
-            {/* Admin Quick Stats - Only for Admin */}
-            {isAdmin && (
-              <div className="quick-stats">
-                <div className="quick-stat">
-                  <div className="stat-number">0</div>
-                  <div className="stat-label">Total Complaints</div>
-                </div>
-                <div className="quick-stat">
-                  <div className="stat-number">0</div>
-                  <div className="stat-label">Pending</div>
-                </div>
-                <div className="quick-stat">
-                  <div className="stat-number">0</div>
-                  <div className="stat-label">Resolved</div>
-                </div>
-              </div>
-            )}
-
             {/* Success/Error Messages */}
             {success && (
               <div className="message success">
-                <CheckCircle size={20} />
+                <CheckCircle size={18} />
                 {success}
               </div>
             )}
             {error && (
               <div className="message error">
-                <AlertCircle size={20} />
+                <AlertCircle size={18} />
                 {error}
               </div>
             )}
@@ -760,33 +686,33 @@ function Profile() {
               <>
                 <div className="profile-field">
                   <label>
-                    <User size={16} />
+                    <User size={15} />
                     Full Name
                   </label>
                   <div className="field-value">
-                    <User size={18} />
+                    <User size={16} />
                     {formData.name || "Not set"}
                   </div>
                 </div>
 
                 <div className="profile-field">
                   <label>
-                    <Mail size={16} />
+                    <Mail size={15} />
                     Email Address
                   </label>
                   <div className="field-value">
-                    <Mail size={18} />
+                    <Mail size={16} />
                     {formData.email || "Not set"}
                   </div>
                 </div>
 
                 <div className="profile-field">
                   <label>
-                    <Phone size={16} />
+                    <Phone size={15} />
                     Contact Number
                   </label>
                   <div className="field-value">
-                    <Phone size={18} />
+                    <Phone size={16} />
                     {formData.phone || "Not set"}
                   </div>
                 </div>
@@ -797,22 +723,22 @@ function Profile() {
                     <div className="field-grid">
                       <div className="profile-field">
                         <label>
-                          <Building size={16} />
+                          <Building size={15} />
                           Department
                         </label>
                         <div className="field-value">
-                          <Building size={18} />
+                          <Building size={16} />
                           {formData.department || "Not set"}
                         </div>
                       </div>
 
                       <div className="profile-field">
                         <label>
-                          <MapPin size={16} />
+                          <MapPin size={15} />
                           Office Location
                         </label>
                         <div className="field-value">
-                          <MapPin size={18} />
+                          <MapPin size={16} />
                           {formData.office || "Not set"}
                         </div>
                       </div>
@@ -820,11 +746,11 @@ function Profile() {
 
                     <div className="profile-field">
                       <label>
-                        <MapPin size={16} />
+                        <MapPin size={15} />
                         Address
                       </label>
                       <div className="field-value">
-                        <MapPin size={18} />
+                        <MapPin size={16} />
                         {formData.address || "Not set"}
                       </div>
                     </div>
@@ -833,14 +759,14 @@ function Profile() {
 
                 <div className="profile-actions">
                   <button className="btn-edit" onClick={toggleEdit}>
-                    <Edit2 size={18} />
+                    <Edit2 size={16} />
                     Edit Profile
                   </button>
                   <button 
                     className={`btn-change-password ${showChangePassword ? 'active' : ''}`}
                     onClick={toggleChangePassword}
                   >
-                    <Key size={18} />
+                    <Key size={16} />
                     {showChangePassword ? 'Cancel' : 'Change Password'}
                   </button>
                 </div>
@@ -849,7 +775,7 @@ function Profile() {
                 {showChangePassword && (
                   <div className="password-section">
                     <div className="section-title">
-                      <Key size={20} />
+                      <Key size={18} />
                       Change Password
                     </div>
 
@@ -868,7 +794,7 @@ function Profile() {
                           onClick={() => setShowPassword(!showPassword)}
                           type="button"
                         >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
                     </div>
@@ -888,7 +814,7 @@ function Profile() {
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           type="button"
                         >
-                          {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
                     </div>
@@ -908,7 +834,7 @@ function Profile() {
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           type="button"
                         >
-                          {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
                     </div>
@@ -919,7 +845,7 @@ function Profile() {
                         onClick={toggleChangePassword}
                         style={{ flex: 1 }}
                       >
-                        <X size={18} />
+                        <X size={16} />
                         Cancel
                       </button>
                       <button
@@ -930,12 +856,12 @@ function Profile() {
                       >
                         {loading ? (
                           <>
-                            <Loader size={18} className="animate-spin" />
+                            <Loader size={16} className="animate-spin" />
                             Updating...
                           </>
                         ) : (
                           <>
-                            <Save size={18} />
+                            <Save size={16} />
                             Update Password
                           </>
                         )}
@@ -949,8 +875,8 @@ function Profile() {
               <>
                 <div className="profile-field">
                   <label>
-                    <User size={16} />
-                    Full Name <span style={{ color: '#f87171' }}>*</span>
+                    <User size={15} />
+                    Full Name <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
                     type="text"
@@ -964,8 +890,8 @@ function Profile() {
 
                 <div className="profile-field">
                   <label>
-                    <Mail size={16} />
-                    Email Address <span style={{ color: '#f87171' }}>*</span>
+                    <Mail size={15} />
+                    Email Address <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
                     type="email"
@@ -979,7 +905,7 @@ function Profile() {
 
                 <div className="profile-field">
                   <label>
-                    <Phone size={16} />
+                    <Phone size={15} />
                     Contact Number
                   </label>
                   <input
@@ -997,7 +923,7 @@ function Profile() {
                     <div className="field-grid">
                       <div className="profile-field">
                         <label>
-                          <Building size={16} />
+                          <Building size={15} />
                           Department
                         </label>
                         <input
@@ -1011,7 +937,7 @@ function Profile() {
 
                       <div className="profile-field">
                         <label>
-                          <MapPin size={16} />
+                          <MapPin size={15} />
                           Office Location
                         </label>
                         <input
@@ -1026,7 +952,7 @@ function Profile() {
 
                     <div className="profile-field">
                       <label>
-                        <MapPin size={16} />
+                        <MapPin size={15} />
                         Address
                       </label>
                       <textarea
@@ -1042,7 +968,7 @@ function Profile() {
 
                 <div className="profile-actions">
                   <button className="btn-cancel" onClick={toggleEdit}>
-                    <X size={18} />
+                    <X size={16} />
                     Cancel
                   </button>
                   <button
@@ -1052,12 +978,12 @@ function Profile() {
                   >
                     {loading ? (
                       <>
-                        <Loader size={18} className="animate-spin" />
+                        <Loader size={16} className="animate-spin" />
                         Saving...
                       </>
                     ) : (
                       <>
-                        <Save size={18} />
+                        <Save size={16} />
                         Save Changes
                       </>
                     )}

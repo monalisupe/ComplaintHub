@@ -50,7 +50,6 @@ function CreateComplaint() {
     setPhotoPreview(null);
   };
 
-  // ✅ FIXED: Send JSON instead of FormData
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -58,20 +57,17 @@ function CreateComplaint() {
     setSuccess(false);
 
     try {
-      // Send as JSON - matches your backend expectation
       const response = await api.post("/complaints", {
         title: formData.title,
         category: formData.category,
         description: formData.description,
-        // Photo is commented out for now since backend doesn't handle it yet
-        // photo: formData.photo, // Will add later with multer
       });
 
       if (response.data.success) {
         setSuccess(true);
         setTimeout(() => {
           navigate("/my-complaints");
-        }, 2000);
+        }, 1500);
       }
     } catch (err) {
       console.error("Submit Complaint Error:", err);
@@ -84,12 +80,15 @@ function CreateComplaint() {
   return (
     <>
       <style>{`
+        /* ========================================
+           CREATE COMPLAINT - PROFESSIONAL WHITE THEME
+           ======================================== */
+
         .create-complaint-wrapper {
           min-height: 100vh;
-          background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%);
+          background: #f8fafc;
           display: flex;
           position: relative;
-          overflow: hidden;
         }
 
         .create-complaint-main {
@@ -98,74 +97,50 @@ function CreateComplaint() {
           min-width: 0;
           position: relative;
           z-index: 1;
-        }
-
-        .create-complaint-main::before {
-          content: '';
-          position: fixed;
-          top: -50%;
-          right: -50%;
-          width: 200%;
-          height: 200%;
-          background: radial-gradient(circle at 70% 30%, rgba(99,102,241,0.05) 0%, transparent 50%);
-          animation: rotateGlow 20s linear infinite;
-          pointer-events: none;
-        }
-
-        @keyframes rotateGlow {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          background: #f8fafc;
         }
 
         .create-complaint-card {
-          max-width: 800px;
+          max-width: 760px;
           margin: 0 auto;
-          padding: 40px;
-          border-radius: 24px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: 0 8px 40px rgba(0,0,0,0.2);
-          transition: all 0.4s ease;
-        }
-
-        .create-complaint-card:hover {
-          border-color: rgba(99,102,241,0.15);
-          box-shadow: 0 8px 50px rgba(99,102,241,0.05);
+          padding: 36px 40px;
+          border-radius: 20px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
         .create-complaint-card .header {
           text-align: center;
-          margin-bottom: 32px;
+          margin-bottom: 28px;
         }
 
         .create-complaint-card .header .icon-wrapper {
-          width: 64px;
-          height: 64px;
+          width: 56px;
+          height: 56px;
           border-radius: 16px;
           display: grid;
           place-items: center;
-          background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15));
-          margin: 0 auto 16px;
-          border: 1px solid rgba(99,102,241,0.15);
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          margin: 0 auto 14px;
         }
 
         .create-complaint-card .header .icon-wrapper svg {
-          color: #818cf8;
+          color: #2563eb;
         }
 
         .create-complaint-card .header h2 {
-          color: #f1f5f9;
-          font-size: 28px;
-          font-weight: 700;
+          color: #0f172a;
+          font-size: 24px;
+          font-weight: 800;
           margin: 0;
         }
 
         .create-complaint-card .header p {
-          color: #94a3b8;
-          font-size: 15px;
-          margin: 8px 0 0;
+          color: #64748b;
+          font-size: 14px;
+          margin: 6px 0 0;
         }
 
         .form-group {
@@ -174,19 +149,19 @@ function CreateComplaint() {
 
         .form-group label {
           display: block;
-          color: #cbd5e1;
+          color: #334155;
           font-weight: 600;
-          font-size: 14px;
+          font-size: 13px;
           margin-bottom: 6px;
         }
 
         .form-group label .required {
-          color: #f87171;
+          color: #ef4444;
           margin-left: 2px;
         }
 
         .form-group label .optional {
-          color: #64748b;
+          color: #94a3b8;
           font-weight: 400;
           font-size: 12px;
           margin-left: 6px;
@@ -198,36 +173,34 @@ function CreateComplaint() {
           width: 100%;
           padding: 12px 16px;
           border-radius: 12px;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: #f1f5f9;
-          font-size: 15px;
-          transition: all 0.3s ease;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #0f172a;
+          font-size: 14px;
+          transition: all 0.2s ease;
           outline: none;
         }
 
         .form-group input::placeholder,
         .form-group textarea::placeholder {
-          color: #64748b;
+          color: #94a3b8;
         }
 
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
-          border-color: #6366f1;
-          box-shadow: 0 0 30px rgba(99,102,241,0.1);
-          background: rgba(255,255,255,0.08);
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+          background: #ffffff;
         }
 
         .form-group select {
-          appearance: none;
           cursor: pointer;
-          color: #94a3b8;
         }
 
         .form-group select option {
-          background: #1a1a2e;
-          color: #f1f5f9;
+          background: #ffffff;
+          color: #0f172a;
         }
 
         .form-group textarea {
@@ -238,19 +211,19 @@ function CreateComplaint() {
 
         /* Photo Upload */
         .photo-upload-area {
-          border: 2px dashed rgba(255,255,255,0.1);
+          border: 2px dashed #cbd5e1;
           border-radius: 12px;
-          padding: 20px;
+          padding: 22px;
           text-align: center;
           cursor: pointer;
-          transition: all 0.3s ease;
-          background: rgba(255,255,255,0.02);
+          transition: all 0.2s ease;
+          background: #f8fafc;
           position: relative;
         }
 
         .photo-upload-area:hover {
-          border-color: rgba(99,102,241,0.3);
-          background: rgba(99,102,241,0.05);
+          border-color: #2563eb;
+          background: #eff6ff;
         }
 
         .photo-upload-area .upload-icon {
@@ -259,13 +232,14 @@ function CreateComplaint() {
         }
 
         .photo-upload-area p {
-          color: #94a3b8;
+          color: #334155;
           font-size: 14px;
+          font-weight: 500;
           margin: 0;
         }
 
         .photo-upload-area .upload-hint {
-          color: #64748b;
+          color: #94a3b8;
           font-size: 12px;
           margin-top: 4px;
         }
@@ -275,7 +249,7 @@ function CreateComplaint() {
           display: inline-block;
           border-radius: 12px;
           overflow: hidden;
-          border: 1px solid rgba(255,255,255,0.1);
+          border: 1px solid #e2e8f0;
         }
 
         .photo-preview img {
@@ -298,12 +272,11 @@ function CreateComplaint() {
           cursor: pointer;
           display: grid;
           place-items: center;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .photo-preview .remove-photo:hover {
-          transform: scale(1.1);
-          background: #ef4444;
+          background: #dc2626;
         }
 
         .form-actions {
@@ -314,24 +287,24 @@ function CreateComplaint() {
 
         .btn-submit {
           flex: 1;
-          padding: 14px 24px;
+          padding: 12px 24px;
           border: none;
-          border-radius: 14px;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          border-radius: 12px;
+          background: #2563eb;
           color: white;
           font-weight: 600;
-          font-size: 16px;
+          font-size: 15px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
+          gap: 8px;
         }
 
         .btn-submit:hover:not(:disabled) {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 30px rgba(99,102,241,0.3);
+          background: #1d4ed8;
+          transform: translateY(-1px);
         }
 
         .btn-submit:disabled {
@@ -340,45 +313,46 @@ function CreateComplaint() {
         }
 
         .btn-cancel {
-          padding: 14px 24px;
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 14px;
-          background: rgba(255,255,255,0.05);
-          color: #94a3b8;
+          padding: 12px 24px;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          background: #ffffff;
+          color: #64748b;
           font-weight: 600;
-          font-size: 16px;
+          font-size: 15px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .btn-cancel:hover {
-          background: rgba(255,255,255,0.08);
-          color: #f1f5f9;
-          transform: translateY(-2px);
+          background: #f1f5f9;
+          color: #0f172a;
         }
 
         .error-message {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 14px 18px;
+          padding: 12px 16px;
           border-radius: 12px;
-          background: rgba(239,68,68,0.12);
-          border: 1px solid rgba(239,68,68,0.2);
-          color: #f87171;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #b91c1c;
           margin-bottom: 20px;
+          font-size: 14px;
         }
 
         .success-message {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 14px 18px;
+          padding: 12px 16px;
           border-radius: 12px;
-          background: rgba(16,185,129,0.12);
-          border: 1px solid rgba(16,185,129,0.2);
-          color: #34d399;
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          color: #15803d;
           margin-bottom: 20px;
+          font-size: 14px;
         }
 
         @media (max-width: 768px) {
@@ -387,19 +361,15 @@ function CreateComplaint() {
           }
 
           .create-complaint-card {
-            padding: 24px;
+            padding: 24px 20px;
           }
 
           .create-complaint-card .header h2 {
-            font-size: 22px;
+            font-size: 20px;
           }
 
           .form-actions {
             flex-direction: column;
-          }
-
-          .photo-preview img {
-            max-width: 100%;
           }
         }
       `}</style>
@@ -412,7 +382,7 @@ function CreateComplaint() {
           <div className="create-complaint-card">
             <div className="header">
               <div className="icon-wrapper">
-                <PlusCircle size={32} />
+                <PlusCircle size={28} />
               </div>
               <h2>Submit New Complaint</h2>
               <p>Fill in the details below to register your complaint</p>
@@ -420,14 +390,14 @@ function CreateComplaint() {
 
             {error && (
               <div className="error-message">
-                <AlertCircle size={20} />
+                <AlertCircle size={18} />
                 {error}
               </div>
             )}
 
             {success && (
               <div className="success-message">
-                <CheckCircle size={20} />
+                <CheckCircle size={18} />
                 Complaint submitted successfully! Redirecting...
               </div>
             )}
@@ -474,12 +444,12 @@ function CreateComplaint() {
               <div className="form-group">
                 <label>Photo <span className="optional">(optional - coming soon)</span></label>
                 {!photoPreview ? (
-                  <div 
+                  <div
                     className="photo-upload-area"
                     onClick={() => document.getElementById('photoInput').click()}
                   >
                     <div className="upload-icon">
-                      <Upload size={32} />
+                      <Upload size={28} />
                     </div>
                     <p>Click to upload a photo</p>
                     <div className="upload-hint">PNG, JPG, JPEG up to 5MB</div>
@@ -518,7 +488,7 @@ function CreateComplaint() {
                     "Submitting..."
                   ) : (
                     <>
-                      <Send size={18} />
+                      <Send size={16} />
                       Submit Complaint
                     </>
                   )}

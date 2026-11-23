@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
+import ComplaintModal from "../components/ComplaintModal";
 import api from "../services/api";
 import { FileText, Clock, CheckCircle, Loader, Eye, AlertCircle, PlusCircle, Calendar, Image } from "lucide-react";
 
@@ -10,6 +11,8 @@ function MyComplaints() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchComplaints();
@@ -47,13 +50,13 @@ function MyComplaints() {
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
       case "pending":
-        return <Clock size={14} />;
+        return <Clock size={13} />;
       case "in progress":
-        return <Loader size={14} className="animate-spin" />;
+        return <Loader size={13} className="animate-spin" />;
       case "resolved":
-        return <CheckCircle size={14} />;
+        return <CheckCircle size={13} />;
       case "rejected":
-        return <AlertCircle size={14} />;
+        return <AlertCircle size={13} />;
       default:
         return null;
     }
@@ -70,12 +73,15 @@ function MyComplaints() {
   return (
     <>
       <style>{`
+        /* ========================================
+           MY COMPLAINTS - PROFESSIONAL WHITE THEME
+           ======================================== */
+
         .my-complaints-wrapper {
           min-height: 100vh;
-          background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%);
+          background: #f8fafc;
           display: flex;
           position: relative;
-          overflow: hidden;
         }
 
         .my-complaints-main {
@@ -84,23 +90,7 @@ function MyComplaints() {
           min-width: 0;
           position: relative;
           z-index: 1;
-        }
-
-        .my-complaints-main::before {
-          content: '';
-          position: fixed;
-          top: -50%;
-          right: -50%;
-          width: 200%;
-          height: 200%;
-          background: radial-gradient(circle at 70% 30%, rgba(99,102,241,0.05) 0%, transparent 50%);
-          animation: rotateGlow 20s linear infinite;
-          pointer-events: none;
-        }
-
-        @keyframes rotateGlow {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          background: #f8fafc;
         }
 
         .my-complaints-header {
@@ -109,7 +99,7 @@ function MyComplaints() {
           align-items: center;
           flex-wrap: wrap;
           gap: 16px;
-          margin-bottom: 28px;
+          margin-bottom: 24px;
         }
 
         .my-complaints-header .header-left {
@@ -119,124 +109,119 @@ function MyComplaints() {
         }
 
         .my-complaints-header .header-left .header-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 16px;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
           display: grid;
           place-items: center;
-          background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15));
-          border: 1px solid rgba(99,102,241,0.15);
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
         }
 
         .my-complaints-header .header-left .header-icon svg {
-          color: #818cf8;
+          color: #2563eb;
         }
 
         .my-complaints-header .header-left h1 {
-          color: #f1f5f9;
-          font-size: 28px;
-          font-weight: 700;
+          color: #0f172a;
+          font-size: 26px;
+          font-weight: 800;
           margin: 0;
         }
 
         .my-complaints-header .header-left p {
-          color: #94a3b8;
+          color: #64748b;
           font-size: 14px;
           margin: 4px 0 0;
         }
 
         .my-complaints-header .header-left .complaint-count {
           display: inline-block;
-          padding: 2px 12px;
+          padding: 2px 10px;
           border-radius: 20px;
-          background: rgba(99,102,241,0.15);
-          color: #818cf8;
-          font-size: 13px;
-          font-weight: 600;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          color: #2563eb;
+          font-size: 12px;
+          font-weight: 700;
           margin-left: 8px;
         }
 
         .btn-new-complaint {
-          display: flex;
+          display: inline-flex;
           align-items: center;
           gap: 8px;
-          padding: 12px 24px;
+          padding: 10px 20px;
           border: none;
-          border-radius: 14px;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          border-radius: 12px;
+          background: #2563eb;
           color: white;
           font-weight: 600;
           font-size: 14px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .btn-new-complaint:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 30px rgba(99,102,241,0.3);
+          background: #1d4ed8;
+          transform: translateY(-1px);
         }
 
         .my-complaints-card {
-          padding: 28px;
-          border-radius: 24px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.08);
-          transition: all 0.4s ease;
-        }
-
-        .my-complaints-card:hover {
-          border-color: rgba(255,255,255,0.12);
+          padding: 24px 28px;
+          border-radius: 18px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
         .complaints-grid {
           display: grid;
-          gap: 16px;
+          gap: 14px;
         }
 
         .complaint-card-item {
-          padding: 20px 24px;
-          border-radius: 16px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
+          padding: 18px 22px;
+          border-radius: 14px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
           gap: 12px;
-          transition: all 0.3s ease;
-          cursor: pointer;
+          transition: all 0.2s ease;
         }
 
         .complaint-card-item:hover {
-          background: rgba(99,102,241,0.06);
-          border-color: rgba(99,102,241,0.15);
-          transform: translateX(4px);
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
 
         .complaint-card-item .complaint-info {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 6px;
           flex: 1;
         }
 
         .complaint-card-item .complaint-info .complaint-title {
-          color: #f1f5f9;
+          color: #0f172a;
           font-weight: 600;
-          font-size: 16px;
+          font-size: 15px;
         }
 
         .complaint-card-item .complaint-info .complaint-meta {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 14px;
           flex-wrap: wrap;
         }
 
         .complaint-card-item .complaint-info .complaint-meta span {
-          color: #94a3b8;
+          color: #64748b;
           font-size: 13px;
           display: flex;
           align-items: center;
@@ -244,127 +229,132 @@ function MyComplaints() {
         }
 
         .complaint-card-item .complaint-info .complaint-meta .category-tag {
-          padding: 2px 12px;
-          border-radius: 20px;
-          background: rgba(255,255,255,0.06);
-          color: #94a3b8;
-          font-size: 12px;
+          padding: 3px 10px;
+          border-radius: 8px;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+          color: #334155;
+          font-size: 11px;
+          font-weight: 600;
         }
 
         .complaint-card-item .complaint-info .complaint-meta .has-photo {
-          color: #818cf8;
+          color: #2563eb;
         }
 
         .status-badge {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 6px 14px;
+          padding: 4px 12px;
           border-radius: 20px;
           font-size: 12px;
-          font-weight: 700;
-          transition: all 0.3s ease;
+          font-weight: 600;
+          transition: all 0.2s ease;
           white-space: nowrap;
         }
 
         .status-badge.pending {
-          background: rgba(245,158,11,0.15);
-          color: #fbbf24;
-          border: 1px solid rgba(245,158,11,0.2);
+          background: #fef3c7;
+          color: #b45309;
+          border: 1px solid #fde68a;
         }
 
         .status-badge.progress {
-          background: rgba(99,102,241,0.15);
-          color: #818cf8;
-          border: 1px solid rgba(99,102,241,0.2);
+          background: #eff6ff;
+          color: #1d4ed8;
+          border: 1px solid #bfdbfe;
         }
 
         .status-badge.resolved {
-          background: rgba(16,185,129,0.15);
-          color: #34d399;
-          border: 1px solid rgba(16,185,129,0.2);
+          background: #dcfce7;
+          color: #15803d;
+          border: 1px solid #bbf7d0;
         }
 
         .status-badge.rejected {
-          background: rgba(239,68,68,0.15);
-          color: #f87171;
-          border: 1px solid rgba(239,68,68,0.2);
+          background: #ffe4e6;
+          color: #be123c;
+          border: 1px solid #fecdd3;
         }
 
         .complaint-card-item .complaint-actions {
           display: flex;
-          gap: 8px;
+          gap: 10px;
           align-items: center;
         }
 
         .btn-view-complaint {
-          padding: 8px 16px;
-          border: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          border: 1px solid #bfdbfe;
           border-radius: 10px;
-          background: rgba(99,102,241,0.12);
-          color: #818cf8;
+          background: #eff6ff;
+          color: #2563eb;
           font-weight: 600;
           font-size: 12px;
           cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          gap: 6px;
+          transition: all 0.2s ease;
         }
 
         .btn-view-complaint:hover {
-          background: rgba(99,102,241,0.25);
-          transform: translateX(4px);
+          background: #2563eb;
+          color: #ffffff;
+          border-color: #2563eb;
         }
 
         .empty-state {
           text-align: center;
           padding: 60px 20px;
-          color: #94a3b8;
+          color: #64748b;
         }
 
         .empty-state .empty-icon {
-          font-size: 56px;
-          margin-bottom: 16px;
+          font-size: 52px;
+          margin-bottom: 14px;
         }
 
         .empty-state h3 {
-          color: #f1f5f9;
-          margin: 0 0 8px;
+          color: #0f172a;
+          margin: 0 0 6px;
+          font-size: 18px;
+          font-weight: 700;
         }
 
         .empty-state p {
           margin: 0 0 4px;
+          font-size: 14px;
         }
 
         .empty-state .btn-create-first {
-          margin-top: 16px;
-          padding: 12px 24px;
+          margin-top: 18px;
+          padding: 10px 22px;
           border: none;
-          border-radius: 14px;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          border-radius: 12px;
+          background: #2563eb;
           color: white;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .empty-state .btn-create-first:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 30px rgba(99,102,241,0.3);
+          background: #1d4ed8;
         }
 
         .loading-state {
           text-align: center;
           padding: 60px 20px;
-          color: #94a3b8;
+          color: #64748b;
         }
 
         .loading-state .spinner {
-          width: 48px;
-          height: 48px;
-          border: 3px solid rgba(255,255,255,0.05);
-          border-top: 3px solid #6366f1;
+          width: 42px;
+          height: 42px;
+          border: 3px solid #e2e8f0;
+          border-top: 3px solid #2563eb;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
           margin: 0 auto 16px;
@@ -376,11 +366,11 @@ function MyComplaints() {
 
         .error-state {
           text-align: center;
-          padding: 60px 20px;
-          color: #f87171;
-          background: rgba(239,68,68,0.08);
+          padding: 40px 20px;
+          color: #b91c1c;
+          background: #fef2f2;
           border-radius: 16px;
-          border: 1px solid rgba(239,68,68,0.15);
+          border: 1px solid #fecaca;
         }
 
         @media (max-width: 768px) {
@@ -452,8 +442,9 @@ function MyComplaints() {
                     padding: '8px 20px',
                     border: 'none',
                     borderRadius: '10px',
-                    background: '#6366f1',
+                    background: '#2563eb',
                     color: 'white',
+                    fontWeight: 600,
                     cursor: 'pointer'
                   }}
                 >
@@ -507,7 +498,13 @@ function MyComplaints() {
                         {getStatusIcon(complaint.status)}
                         {complaint.status}
                       </span>
-                      <button className="btn-view-complaint">
+                      <button
+                        className="btn-view-complaint cursor-pointer"
+                        onClick={() => {
+                          setSelectedComplaint(complaint);
+                          setIsModalOpen(true);
+                        }}
+                      >
                         <Eye size={14} />
                         View
                       </button>
@@ -518,6 +515,12 @@ function MyComplaints() {
             )}
           </div>
         </main>
+
+        <ComplaintModal
+          isOpen={isModalOpen}
+          complaint={selectedComplaint}
+          onClose={() => setIsModalOpen(false)}
+        />
       </div>
     </>
   );

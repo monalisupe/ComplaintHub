@@ -14,9 +14,15 @@ import AuthGuard from "./components/AuthGuard";
 function App() {
   return (
     <Routes>
+      {/* Both / and /login navigate to SignIn */}
       <Route path="/" element={<SignIn />} />
+      <Route path="/login" element={<SignIn />} />
+      
+      {/* Both /register and /signup navigate to SignUp */}
       <Route path="/register" element={<SignUp />} />
+      <Route path="/signup" element={<SignUp />} />
 
+      {/* Citizen Dashboard */}
       <Route
         path="/dashboard"
         element={
@@ -26,6 +32,7 @@ function App() {
         }
       />
 
+      {/* Admin Dashboard */}
       <Route
         path="/admin"
         element={
@@ -35,6 +42,7 @@ function App() {
         }
       />
 
+      {/* Complaint Management Routes */}
       <Route
         path="/create-complaint"
         element={
@@ -70,6 +78,9 @@ function App() {
           </AuthGuard>
         }
       />
+
+      {/* Fallback to SignIn */}
+      <Route path="*" element={<SignIn />} />
     </Routes>
   );
 }
